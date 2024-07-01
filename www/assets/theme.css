@@ -1,0 +1,24 @@
+body {
+  --surface: rgb(0, 0, 0);
+  --surface-1: rgb(19, 19, 19);
+  --surface-2: rgb(27, 27, 27);
+
+  --on-surface: rgb(255, 255, 255);
+  --on-surface-1: rgb(190, 190, 190);
+  --on-surface-2: rgb(155, 155, 155);
+
+  --surface-1-hover: rgb(27, 27, 27);
+
+  --accent: rgb(249, 130, 32);
+  --on-accent: rgb(118, 58, 0);
+
+  --accent-1: rgb(255, 188, 130);
+  --on-accent-1: rgb(83, 38, 0);
+
+  --special-accent: rgb(249 130 32 / 23%);
+  --on-special-accent: rgb(255 126 0);
+
+  --border-radius: 16px;
+  --border-radius-large: 24px;
+  --border-radius-extra-large: 48px;
+}
