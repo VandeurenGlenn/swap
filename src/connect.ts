@@ -1,9 +1,11 @@
 export default async (walletProvider = 'metamask') => {
+  console.log(walletProvider)
+
   if (walletProvider === 'walletConnect') {
     if (!globalThis.walletConnect) await import('./wallet-connect.js')
     await walletConnect.connect()
   } else if (walletProvider === 'metamask') {
-    const ethers = await import('./../node_modules/ethers/dist/ethers.js')
+    const ethers = await import('../node_modules/ethers/dist/ethers.js')
     // console.log({importee});
     // const Web3Provider = importee.default.Web3Provider
     const provider = new ethers.BrowserProvider(globalThis.ethereum, 'any')

@@ -1,5 +1,4 @@
 import { LitElement, PropertyValueMap, css, html } from 'lit'
-import connect from '../connect.js'
 import '@material/web/button/filled-button.js'
 import '@material/web/iconbutton/icon-button.js'
 import '@vandeurenglenn/lit-elements/icon.js'
@@ -18,7 +17,7 @@ export default class ConnectHero extends LitElement {
     this.walletConnected = localStorage.getItem('wallet-connected')
 
     if (this.walletConnected === 'true' && this.selectedWalletProvider !== undefined) {
-      await connect(this.selectedWalletProvider)
+      await this.#connect()
     }
     const els = this.shadowRoot?.querySelectorAll('md-filled-button')
 
@@ -30,10 +29,10 @@ export default class ConnectHero extends LitElement {
     }
   }
 
-  // async #connect() {
-  //   const importee = await import('../connect.js')
-  //   return importee.default(this.selectedWalletProvider)
-  // }
+  async #connect() {
+    const importee = await import('./../connect.js')
+    return importee.default(this.selectedWalletProvider)
+  }
 
   async #click(event) {
     console.log(event.target)
@@ -41,7 +40,7 @@ export default class ConnectHero extends LitElement {
     else if (event.target.dataset.provider) {
       this.selectedWalletProvider = event.target.dataset.provider
       localStorage.setItem('selectedWalletProvider', this.selectedWalletProvider)
-      await connect(this.selectedWalletProvider)
+      await this.#connect()
     }
   }
 

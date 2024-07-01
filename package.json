@@ -17,6 +17,7 @@
     "@vandeurenglenn/lit-elements": "^0.3.36",
     "@walletconnect/client": "^1.8.0",
     "@walletconnect/qrcode-modal": "^1.8.0",
+    "@web3modal/ethers": "^5.0.4",
     "ethers": "^6.13.1",
     "lit": "^3.1.4"
   },
