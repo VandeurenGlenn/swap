@@ -1,11 +1,12 @@
 import { LitElement, html, css, PropertyValueMap } from 'lit'
 import { provide, createContext } from '@lit/context'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, query } from 'lit/decorators.js'
 import '@vandeurenglenn/lit-elements/icon-set.js'
 import './elements/token-select.js'
 import './elements/token-input.js'
 import './elements/token-input-swap.js'
 import './elements/hero.js'
+import './elements/connect-hero.js'
 import './elements/connect-wallet.js'
 import TokenList from './token-list.js'
 
@@ -26,12 +27,27 @@ export class AppShell extends LitElement {
 
   @property() chain = 'binance'
 
+  @query('connect-hero') connectHero
+  @query('token-selector') tokenSelector
+
   tokenSelectorChange({ detail }: CustomEvent) {
     console.log({ detail })
   }
 
+  #accountchange = ({ detail }: CustomEvent) => {
+    console.log({ detail })
+
+    if (Array.isArray(detail)) {
+      if (this.connectHero.shown) this.connectHero.shown = false
+      localStorage.setItem('wallet-connected', 'true')
+    } else {
+      localStorage.setItem('wallet-connected', 'false')
+    }
+  }
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     document.addEventListener('token-selector-change', this.tokenSelectorChange)
+    document.addEventListener('accountsChange', this.#accountchange)
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -59,18 +75,30 @@ export class AppShell extends LitElement {
     css`
       :host {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         height: 100%;
         width: 100%;
-        background: var(--surface);
         color: var(--md-sys-color-on-surface);
+
+        background-color: var(--surface);
+      }
+
+      .title {
+        color: var(--accent);
       }
     `
   ]
 
   sellTokenSelect() {
-    this.shadowRoot?.querySelector('token-selector').show()
+    this.tokenSelector.show()
+  }
+
+  showConnectHero() {
+    console.log('c')
+
+    this.connectHero.shown = true
   }
 
   render() {
@@ -82,7 +110,8 @@ export class AppShell extends LitElement {
           <span name="cancel">@symbol-cancel</span>
         </template>
       </custom-icon-set>
-
+      <img src="./assets/logo.webp" />
+      <h1 class="title">FoxSwap</h1>
       <hero-element>
         <token-input
           action="sell"
@@ -93,8 +122,8 @@ export class AppShell extends LitElement {
           .selected=${this.babyfox}></token-input>
         <connect-wallet></connect-wallet>
       </hero-element>
-
       <token-selector></token-selector>
+      <connect-hero></connect-hero>
     `
   }
 }

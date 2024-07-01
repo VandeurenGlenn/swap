@@ -10,7 +10,7 @@ export class TokenInputSwap extends LitElement {
       :host {
         display: flex;
 
-        z-index: 2;
+        z-index: 1;
         position: relative;
         height: 6px;
         width: 100%;

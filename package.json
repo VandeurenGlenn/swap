@@ -15,9 +15,13 @@
   "dependencies": {
     "@material/web": "^1.5.1",
     "@vandeurenglenn/lit-elements": "^0.3.36",
+    "@walletconnect/client": "^1.8.0",
+    "@walletconnect/qrcode-modal": "^1.8.0",
+    "ethers": "^6.13.1",
     "lit": "^3.1.4"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^4.18.0",

@@ -25,6 +25,10 @@ export class TokenInput extends LitElement {
         position: relative;
       }
 
+      :host(:hover) {
+        background-color: rgb(27 27 27 / 75%);
+      }
+
       input {
         height: 44px;
         width: 100%;

@@ -28,6 +28,8 @@ export class ConnectWallet extends LitElement {
   ]
 
   render() {
-    return html` <md-filled-button>connect wallet</md-filled-button>`
+    return html` <md-filled-button @click=${() => document.querySelector('app-shell').showConnectHero()}
+      >connect wallet</md-filled-button
+    >`
   }
 }
