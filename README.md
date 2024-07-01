@@ -33,3 +33,11 @@ run
 ```sh
 npm run watch
 ```
+
+### Build
+
+run
+
+```sh
+npm run build
+```

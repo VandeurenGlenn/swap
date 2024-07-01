@@ -4,13 +4,17 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "serve": "jsproject --serve www --port 7979",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@material/web": "^1.5.0",
+    "@material/web": "^1.5.1",
+    "@vandeurenglenn/lit-elements": "^0.3.36",
     "lit": "^3.1.4"
   },
   "devDependencies": {
