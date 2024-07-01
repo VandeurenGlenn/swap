@@ -9,6 +9,7 @@ import './elements/hero.js'
 import './elements/connect-hero.js'
 import './elements/connect-wallet.js'
 import TokenList from './token-list.js'
+import { N } from 'ethers'
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
@@ -18,6 +19,15 @@ export class AppShell extends LitElement {
     name: 'babyfox',
     address: '0x8FFfED722C699848d0c0dA9ECfEde20e8ACEf7cE',
     icon: { color: './assets/logo.webp' }
+  }
+
+  nativeToken = {
+    icon: {
+      color: './assets/bsc.svg'
+    },
+    name: 'Binance',
+    address: '0x00',
+    symbol: 'BNB'
   }
 
   #tokenList: TokenList
@@ -85,7 +95,7 @@ export class AppShell extends LitElement {
   async sellTokenSelect() {
     this.#currentSelectedInput = 'sell'
     this.tokenSelector.show()
-    this.tokens = [this.nativeToken, ...(await this.#tokenList.getList())]
+    this.tokens = { BNB: this.nativeToken, ...(await this.#tokenList.getList()) }
     this.tokenSelector.tokens = this.tokens
     this.tokenSelector.requestUpdate()
   }
@@ -93,7 +103,7 @@ export class AppShell extends LitElement {
   async buyTokenSelect() {
     this.#currentSelectedInput = 'buy'
     this.tokenSelector.show()
-    this.tokens = [this.nativeToken, ...(await this.#tokenList.getList())]
+    this.tokens = { BNB: this.nativeToken, ...(await this.#tokenList.getList()) }
     this.tokenSelector.tokens = this.tokens
     this.tokenSelector.requestUpdate()
   }
