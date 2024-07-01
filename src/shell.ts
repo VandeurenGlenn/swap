@@ -135,6 +135,7 @@ export class AppShell extends LitElement {
       <h1 class="title">FoxSwap</h1>
       <hero-element>
         <token-input
+          .selected=${this.nativeToken}
           action="sell"
           @token-select=${this.sellTokenSelect}></token-input>
         <token-input-swap @click=${this.swapInput}></token-input-swap>
