@@ -12,6 +12,7 @@ import TokenList from './token-list.js'
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
+  #currentSelectedInput
   babyfox = {
     symbol: 'BABYFOX',
     name: 'babyfox',
@@ -62,15 +63,6 @@ export class AppShell extends LitElement {
     if (!customElements.get('token-selector')) await import('./elements/token-selector.js')
   }
 
-  // async connectedCallback() {
-  //   super.connectedCallback()
-  //   const response = await fetch('https://tokens.pancakeswap.finance/coingecko.json')
-  //   const { tokens } = await response.json()
-
-  //   this.tokens = tokens
-
-  //   await import('./elements/token-selector.js')
-  // }
   static styles = [
     css`
       :host {
@@ -92,6 +84,12 @@ export class AppShell extends LitElement {
   ]
 
   sellTokenSelect() {
+    this.#currentSelectedInput = 'sell'
+    this.tokenSelector.show()
+  }
+
+  buyTokenSelect() {
+    this.#currentSelectedInput = 'buy'
     this.tokenSelector.show()
   }
 
@@ -99,6 +97,14 @@ export class AppShell extends LitElement {
     console.log('c')
 
     this.connectHero.shown = true
+  }
+
+  swapInput() {
+    const inputs = this.shadowRoot?.querySelectorAll('token-input')
+    const selectedSell = inputs[0].selected
+    const selectedBuy = inputs[1].selected
+    inputs[0].selected = selectedBuy
+    inputs[1].selected = selectedSell
   }
 
   render() {
@@ -116,9 +122,10 @@ export class AppShell extends LitElement {
         <token-input
           action="sell"
           @token-select=${this.sellTokenSelect}></token-input>
-        <token-input-swap></token-input-swap>
+        <token-input-swap @click=${this.swapInput}></token-input-swap>
         <token-input
           action="buy"
+          @token-select=${this.buyTokenSelect}
           .selected=${this.babyfox}></token-input>
         <connect-wallet></connect-wallet>
       </hero-element>
