@@ -24,7 +24,7 @@ export class AppShell extends LitElement {
   @provide({ context: createContext('tokens') })
   tokens
 
-  @property() dex = 'coingecko'
+  @property() dex = 'pancakeswap'
 
   @property() chain = 'binance'
 
@@ -59,7 +59,6 @@ export class AppShell extends LitElement {
 
   async updateTokens() {
     this.#tokenList = new TokenList(this.dex, this.chain)
-    this.tokens = await this.#tokenList.getList()
     if (!customElements.get('token-selector')) await import('./elements/token-selector.js')
   }
 
@@ -83,14 +82,20 @@ export class AppShell extends LitElement {
     `
   ]
 
-  sellTokenSelect() {
+  async sellTokenSelect() {
     this.#currentSelectedInput = 'sell'
     this.tokenSelector.show()
+    this.tokens = [this.nativeToken, ...(await this.#tokenList.getList())]
+    this.tokenSelector.tokens = this.tokens
+    this.tokenSelector.requestUpdate()
   }
 
-  buyTokenSelect() {
+  async buyTokenSelect() {
     this.#currentSelectedInput = 'buy'
     this.tokenSelector.show()
+    this.tokens = [this.nativeToken, ...(await this.#tokenList.getList())]
+    this.tokenSelector.tokens = this.tokens
+    this.tokenSelector.requestUpdate()
   }
 
   showConnectHero() {

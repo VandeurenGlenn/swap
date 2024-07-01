@@ -82,11 +82,7 @@ export default class ArrayRepeat extends HTMLElement {
    * @param {string} value
    */
   set items(value) {
-    console.log({ value })
-
     this._items = this._validate(value)
-    console.log(value)
-
     this.render()
   }
   /**
@@ -231,22 +227,17 @@ export default class ArrayRepeat extends HTMLElement {
   render() {
     const items = Array.from(this.querySelectorAll('.array-repeat-item'))
     if (items.length === this._items.length) return
-    console.log(this.items)
 
     this._queriedCollection = this._items.splice(0, this._max)
-    console.log(this._queriedCollection)
 
     if (this._queriedCollection.length > 0) this._runQue(this._queriedCollection)
   }
 
   _runQue(items) {
-    console.log({ items })
-
     for (let item of items) {
       const index = items.indexOf(item)
       item = this._forOf(item)
       let itemTemplate = this.itemTemplate.cloneNode(true)
-      console.log(item)
 
       for (const { key, value } of item) {
         const name = `[[${this.nameSpace}.${key}]]`
