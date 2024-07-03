@@ -4,9 +4,11 @@ import { customElement, property, query } from 'lit/decorators.js'
 import '@vandeurenglenn/lit-elements/icon-set.js'
 import './elements/token-select.js'
 import './elements/token-input.js'
+import './elements/swap-tokens.js'
 import './elements/token-input-swap.js'
 import './elements/hero.js'
 import './elements/connect-hero.js'
+import './elements/swap-hero.js'
 import './elements/connect-wallet.js'
 import TokenList from './token-list.js'
 import { N } from 'ethers'
@@ -38,8 +40,19 @@ export class AppShell extends LitElement {
 
   @property() chain = 'binance'
 
+  @provide({ context: createContext('selectedAccount') })
+  @property()
+  selectedAccount
+
   @query('connect-hero') connectHero
+
+  @query('swap-hero') swapHero
+
   @query('token-selector') tokenSelector
+
+  @query('token-input[action="sell"]') tokenInputEl
+
+  @query('token-input[action="buy"]') tokenOutputEl
 
   tokenSelectorChange({ detail }: CustomEvent) {
     console.log({ detail })
@@ -49,9 +62,11 @@ export class AppShell extends LitElement {
     console.log({ detail })
 
     if (Array.isArray(detail)) {
+      this.selectedAccount = detail[0]
       if (this.connectHero.shown) this.connectHero.shown = false
       localStorage.setItem('wallet-connected', 'true')
     } else {
+      this.selectedAccount = undefined
       localStorage.setItem('wallet-connected', 'false')
     }
   }
@@ -109,9 +124,14 @@ export class AppShell extends LitElement {
   }
 
   showConnectHero() {
-    console.log('c')
-
     this.connectHero.shown = true
+  }
+
+  showSwapHero() {
+    this.swapHero.inputToken = this.tokenInputEl.selected
+    this.swapHero.outputToken = this.tokenOutputEl.selected
+
+    this.swapHero.shown = true
   }
 
   swapInput() {
@@ -143,10 +163,12 @@ export class AppShell extends LitElement {
           action="buy"
           @token-select=${this.buyTokenSelect}
           .selected=${this.babyfox}></token-input>
-        <connect-wallet></connect-wallet>
+        ${this.selectedAccount ? html`<swap-tokens></swap-tokens>` : html`<connect-wallet></connect-wallet>`}
       </hero-element>
       <token-selector></token-selector>
+
       <connect-hero></connect-hero>
+      <swap-hero></swap-hero>
     `
   }
 }
