@@ -11,13 +11,14 @@ export class HeroElement extends LitElement {
         display: flex;
         flex-direction: column;
         max-width: 480px;
-        width: 100%;
+        width: calc(100% - 24px);
         height: 100%;
         max-height: 320px;
         border-radius: var(--border-radius);
         background-color: var(--surface-1);
         color: var(--on-surface-1);
         padding: 6px;
+        margin: 0 12px;
       }
 
       md-elevation {
