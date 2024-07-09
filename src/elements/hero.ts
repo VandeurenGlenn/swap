@@ -12,8 +12,6 @@ export class HeroElement extends LitElement {
         flex-direction: column;
         max-width: 480px;
         width: calc(100% - 24px);
-        height: 100%;
-        max-height: 320px;
         border-radius: var(--border-radius);
         background-color: var(--surface-1);
         color: var(--on-surface-1);

@@ -1,6 +1,11 @@
 import WalletConnect from '@walletconnect/client/dist/umd/index.min.js'
 globalThis.WalletConnect = WalletConnect
 
+declare global {
+  var WalletConnect: WalletConnect
+  var connector: InstanceType<WalletConnect>
+}
+
 const dispatchEvents = ({ accounts, chainId }) => {
   document.dispatchEvent(new CustomEvent('accountsChange', { detail: accounts }))
   document.dispatchEvent(new CustomEvent('networkChange', { detail: chainId }))

@@ -44,24 +44,34 @@ export default class SwapHero extends LitElement {
       hero-element {
         margin: 0;
         background: var(--surface-1);
-        padding: 12px;
+        padding: 6px 12px;
         box-sizing: border-box;
         max-height: 480px;
       }
 
-      h4 {
+      h2 {
         margin: 0;
+      }
+
+      h3 {
+        color: var(--on-surface-2);
+      }
+
+      custom-icon {
+        --custom-icon-color: var(--on-surface-1);
       }
 
       .header {
         display: flex;
         align-items: center;
         box-sizing: border-box;
-        padding: 12px 12px 12px 12px;
-        border-bottom: 1px solid var(--surface-2);
-        margin-bottom: 24px;
+        padding: 0 0 12px 12px;
         font-weight: 700;
-        color: var(--on-surface-2);
+        color: var(--on-surface-1);
+      }
+
+      strong {
+        font-size: 20px;
       }
 
       md-filled-button {
@@ -91,6 +101,21 @@ export default class SwapHero extends LitElement {
       token-input[action='sell'] {
         margin-bottom: 10px;
       }
+
+      .row {
+        display: flex;
+        width: 100%;
+        align-items: center;
+      }
+
+      img {
+        height: 32px;
+      }
+
+      .container {
+        padding: 0 12px;
+        box-sizing: border-box;
+      }
     `
   ]
 
@@ -99,20 +124,27 @@ export default class SwapHero extends LitElement {
       <div style="height: 181px;"></div>
       <hero-element>
         <span class="header">
-          <h4>swap quote</h4>
+          <h2>swap quote</h2>
           <span class="flex"></span>
           <md-icon-button data-action="close"><custom-icon icon="cancel"></custom-icon></md-icon-button>
         </span>
-        <token-input
-          action="sell"
-          .selected=${this.inputToken}
-          non-interactive></token-input>
-        <token-input
-          action="buy"
-          .selected=${this.outputToken}
-          non-interactive></token-input>
-        <span class="flex"></span>
-        <md-filled-button>confirm</md-filled-button>
+        <div class="container">
+          <h3>sell</h3>
+          <span class="row">
+            <strong>${this.inputToken.amount}</strong>
+            <span class="flex"></span>
+            <img src=${this.inputToken.icon.color} />
+          </span>
+
+          <h3>buy</h3>
+          <span class="row">
+            <strong>${this.outputToken.amount}</strong>
+            <span class="flex"></span>
+            <img src=${this.outputToken.icon.color} />
+          </span>
+          <span class="flex"></span>
+          <md-filled-button>confirm</md-filled-button>
+        </div>
       </hero-element>
     `
   }

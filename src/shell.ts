@@ -2,6 +2,8 @@ import { LitElement, html, css, PropertyValueMap } from 'lit'
 import { provide, createContext } from '@lit/context'
 import { customElement, property, query } from 'lit/decorators.js'
 import '@vandeurenglenn/lit-elements/icon-set.js'
+import './elements/network/select.js'
+import './elements/account/element.js'
 import './elements/token-select.js'
 import './elements/token-input.js'
 import './elements/swap-tokens.js'
@@ -11,7 +13,9 @@ import './elements/connect-hero.js'
 import './elements/swap-hero.js'
 import './elements/connect-wallet.js'
 import TokenList from './token-list.js'
-import { N } from 'ethers'
+import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
+import { getNativeCoin, getNetworkChainId } from './api.js'
+import ERC20 from './ABI/ERC20.js'
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
@@ -23,13 +27,35 @@ export class AppShell extends LitElement {
     icon: { color: './assets/logo.webp' }
   }
 
-  nativeToken = {
-    icon: {
-      color: './assets/bsc.svg'
+  #nativeTokens = {
+    1: {
+      icon: {
+        color: './assets/ethereum.svg'
+      },
+      name: 'Ethereum',
+      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      symbol: 'ETH'
     },
-    name: 'Binance',
-    address: '0x00',
-    symbol: 'BNB'
+    56: {
+      icon: {
+        color: './assets/bsc.svg'
+      },
+      name: 'Binance',
+      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      symbol: 'BNB'
+    },
+    137: {
+      icon: {
+        color: './assets/polygon.svg'
+      },
+      name: 'Polygon',
+      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      symbol: 'MATIC'
+    }
+  }
+
+  getNativeToken(chainId) {
+    return this.#nativeTokens[chainId]
   }
 
   #tokenList: TokenList
@@ -38,11 +64,20 @@ export class AppShell extends LitElement {
 
   @property() dex = 'pancakeswap'
 
-  @property() chain = 'binance'
+  @property({ type: Object }) chain = { name: 'binance', chainId: 56 }
 
-  @provide({ context: createContext('selectedAccount') })
+  @provide({ context: createContext('selected-account') })
   @property()
   selectedAccount
+
+  @provide({ context: createContext('accounts') })
+  @property()
+  accounts
+
+  @provide({ context: createContext('selected-network') })
+  selectedNetwork
+
+  @property() quote
 
   @query('connect-hero') connectHero
 
@@ -58,22 +93,76 @@ export class AppShell extends LitElement {
     console.log({ detail })
   }
 
+  #networkchange = ({ detail }: CustomEvent) => {
+    console.log({ detail })
+
+    this.selectedNetwork = detail
+  }
+
   #accountchange = ({ detail }: CustomEvent) => {
     console.log({ detail })
 
     if (Array.isArray(detail)) {
       this.selectedAccount = detail[0]
+      this.accounts = detail
       if (this.connectHero.shown) this.connectHero.shown = false
       localStorage.setItem('wallet-connected', 'true')
     } else {
       this.selectedAccount = undefined
+      this.accounts = undefined
       localStorage.setItem('wallet-connected', 'false')
     }
+  }
+
+  #tokenInputChange = async ({ detail }: CustomEvent) => {
+    if (detail === '') {
+      return
+    }
+    const tokenInput = this.tokenInputEl.selected
+    const tokenOutput = this.tokenOutputEl.selected
+    const amount = detail
+    console.log(this.selectedNetwork)
+    console.log({ tokenInput })
+    console.log({ tokenOutput })
+
+    let balance
+
+    if (tokenInput.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+      balance = ethers.formatUnits(await provider.send('eth_getBalance', [this.selectedAccount]))
+    } else {
+      const contract = new ethers.Contract(tokenInput.address, ERC20, await provider.getSigner())
+
+      balance = ethers.formatUnits((await contract.balanceOf(this.selectedAccount)).toString())
+    }
+
+    if (Number(balance) < Number(amount)) {
+      document.dispatchEvent(new CustomEvent('swap-balance-to-low', { detail: balance }))
+    } else {
+      const response = await fetch(
+        `https://swap.leofcoin.org/quote?tokenIn=${tokenInput.address}&tokenOut=${
+          tokenOutput.address
+        }&amount=${ethers.parseUnits(amount)}&chainId=${this.selectedNetwork}`
+      )
+      const quote = await response.json()
+      console.log(quote)
+
+      this.tokenOutputEl.amount = Math.round(ethers.formatUnits(String(quote.dstAmount)) * 100) / 100
+
+      this.swapInfo.value = quote
+    }
+  }
+
+  #swapBalanceToLow = () => {
+    this.tokenInputEl.errorMessage = 'balance to low'
+    this.tokenInputEl.errorShown = true
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     document.addEventListener('token-selector-change', this.tokenSelectorChange)
     document.addEventListener('accountsChange', this.#accountchange)
+    document.addEventListener('networkChange', this.#networkchange)
+    document.addEventListener('token-input-change', this.#tokenInputChange)
+    document.addEventListener('swap-balance-to-low', this.#swapBalanceToLow)
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -83,7 +172,7 @@ export class AppShell extends LitElement {
   }
 
   async updateTokens() {
-    this.#tokenList = new TokenList(this.dex, this.chain)
+    this.#tokenList = new TokenList(this.dex, this.chain.name)
     if (!customElements.get('token-selector')) await import('./elements/token-selector.js')
   }
 
@@ -104,22 +193,42 @@ export class AppShell extends LitElement {
       .title {
         color: var(--accent);
       }
+
+      .flex {
+        display: flex;
+        flex: 1;
+      }
+
+      header {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        padding: 6px 12px;
+        box-sizing: border-box;
+      }
     `
   ]
 
   async sellTokenSelect() {
     this.#currentSelectedInput = 'sell'
     this.tokenSelector.show()
-    this.tokens = { BNB: this.nativeToken, ...(await this.#tokenList.getList()) }
-    this.tokenSelector.tokens = this.tokens
+    const tokens = await this.#tokenList.getList()
+    const native = getNativeCoin(this.chain.chainId)
+    tokens[native.symbol] = native
+    this.tokens = tokens
     this.tokenSelector.requestUpdate()
   }
 
   async buyTokenSelect() {
     this.#currentSelectedInput = 'buy'
     this.tokenSelector.show()
-    this.tokens = { BNB: this.nativeToken, ...(await this.#tokenList.getList()) }
-    this.tokenSelector.tokens = this.tokens
+    const tokens = await this.#tokenList.getList()
+    const native = getNativeCoin(this.chain.chainId)
+    tokens[native.symbol] = native
+    this.tokens = tokens
     this.tokenSelector.requestUpdate()
   }
 
@@ -128,9 +237,8 @@ export class AppShell extends LitElement {
   }
 
   showSwapHero() {
-    this.swapHero.inputToken = this.tokenInputEl.selected
-    this.swapHero.outputToken = this.tokenOutputEl.selected
-
+    this.swapHero.inputToken = { amount: this.tokenInputEl.amount, ...this.tokenInputEl.selected }
+    this.swapHero.outputToken = { amount: this.tokenOutputEl.amount, ...this.tokenOutputEl.selected }
     this.swapHero.shown = true
   }
 
@@ -138,6 +246,10 @@ export class AppShell extends LitElement {
     const inputs = this.shadowRoot?.querySelectorAll('token-input')
     const selectedSell = inputs[0].selected
     const selectedBuy = inputs[1].selected
+
+    inputs[0].reset()
+    inputs[1].reset()
+
     inputs[0].selected = selectedBuy
     inputs[1].selected = selectedSell
   }
@@ -148,18 +260,25 @@ export class AppShell extends LitElement {
         <template>
           <span name="swap_vert">@symbol-swap_vert</span>
           <span name="keyboard_arrow_down">@symbol-keyboard_arrow_down</span>
+          <span name="keyboard_arrow_up">@symbol-keyboard_arrow_up</span>
           <span name="cancel">@symbol-cancel</span>
+          <span name="error">@symbol-error</span>
         </template>
       </custom-icon-set>
+      <header>
+        <span class="flex"></span>
+        <account-element></account-element>
+      </header>
       <img src="./assets/logo.webp" />
       <h1 class="title">FoxSwap</h1>
       <hero-element>
         <token-input
-          .selected=${this.nativeToken}
+          .selected=${getNativeCoin(this.chain.chainId)}
           action="sell"
           @token-select=${this.sellTokenSelect}></token-input>
         <token-input-swap @click=${this.swapInput}></token-input-swap>
         <token-input
+          no-input
           action="buy"
           @token-select=${this.buyTokenSelect}
           .selected=${this.babyfox}></token-input>

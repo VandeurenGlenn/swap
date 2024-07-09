@@ -13,8 +13,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@leofcoin/utils": "^1.1.18",
     "@lit/context": "^1.1.2",
     "@material/web": "^1.5.1",
+    "@multiavatar/multiavatar": "^1.0.7",
     "@vandeurenglenn/lit-elements": "^0.3.36",
     "@walletconnect/client": "^1.8.0",
     "@walletconnect/qrcode-modal": "^1.8.0",

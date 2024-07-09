@@ -5,7 +5,8 @@
     "moduleResolution": "nodenext",
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"]
 }

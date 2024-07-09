@@ -23,4 +23,6 @@ body {
   --border-radius-extra-large: 48px;
 
   --scrim: rgb(0 0 0 / 40%);
+
+  --error: #ff7575;
 }

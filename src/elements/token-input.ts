@@ -1,5 +1,5 @@
-import { LitElement, html, css, PropertyValueMap } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { LitElement, html, css, PropertyValueMap, PropertyValues } from 'lit'
+import { customElement, property, query } from 'lit/decorators.js'
 
 @customElement('token-input')
 export class TokenInput extends LitElement {
@@ -7,15 +7,42 @@ export class TokenInput extends LitElement {
 
   @property() selected
 
+  @property() amount
+
   @property({ attribute: 'non-interactive', type: Boolean, reflect: true }) nonInteractive
 
-  @property({ type: Boolean, attribute: 'is-svg', reflect: true }) isSVG
+  @property({ attribute: 'no-input', type: Boolean, reflect: true }) noInput
+
+  @property({ type: Boolean, attribute: 'error-shown', reflect: true }) errorShown
+
+  @property() errorMessage
+
+  @query('input') input: HTMLInputElement
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (this.selected?.icon?.color) {
-      this.isSVG = this.selected?.icon?.color.endsWith('.svg')
+    if (_changedProperties.has('errorMessage')) {
+      this.errorShown = true
     }
   }
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    if (!this.nonInteractive) this.shadowRoot?.querySelector('input')?.addEventListener('input', this.#input)
+  }
+
+  #input = () => {
+    if (this.timeout) clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => {
+      this.errorShown = false
+      this.amount = this.shadowRoot?.querySelector('input').value
+      document.dispatchEvent(new CustomEvent('token-input-change', { detail: this.amount }))
+    }, 300)
+  }
+
+  reset() {
+    this.input.value = null
+    this.errorShown = false
+  }
+
   static styles = [
     css`
       * {
@@ -34,7 +61,7 @@ export class TokenInput extends LitElement {
         position: relative;
       }
 
-      :host(:hover:not([non-interactive])) {
+      :host(:not([non-interactive]):hover) {
         background-color: rgb(27 27 27 / 75%);
       }
 
@@ -52,13 +79,6 @@ export class TokenInput extends LitElement {
         height: 32px;
         width: 32px;
       }
-
-      :host([is-svg]) img {
-        width: 48px;
-        height: 48px;
-        margin-right: -8px;
-      }
-
       .row {
         display: flex;
         width: 100%;
@@ -68,6 +88,40 @@ export class TokenInput extends LitElement {
       :host([non-interactive]) * {
         pointer-events: none;
       }
+
+      .error-message custom-icon {
+        margin-right: 12px;
+        --custom-icon-color: var(--error);
+      }
+
+      .error-message {
+        align-items: center;
+        display: flex;
+        bottom: 6px;
+        transform: scale(0);
+        position: absolute;
+
+        color: var(--error);
+      }
+
+      :host([error-shown]) .error-message {
+        transform: scale(1);
+      }
+
+      :host([no-input]) input {
+        pointer-events: none;
+      }
+
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Firefox */
+      input[type='number'] {
+        -moz-appearance: textfield;
+      }
     `
   ]
 
@@ -76,13 +130,14 @@ export class TokenInput extends LitElement {
       <md-elevation level="1"></md-elevation>
       <span>${this.action}</span>
       <span class="row">
-        <input placeholder="0" />
+        <input placeholder="0" / type="number" value=${this.amount ?? ''}>
         ${this.nonInteractive
           ? html`<img src=${this.selected?.icon?.color} />`
           : html`<token-select
               .selected=${this.selected}
               @token-select=${() => this.dispatchEvent(new CustomEvent('token-select'))}></token-select>`}
       </span>
+      <span class="error-message"><custom-icon icon="error"></custom-icon> ${this.errorMessage} </span>
     `
   }
 }
