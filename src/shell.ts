@@ -59,6 +59,9 @@ export class AppShell extends LitElement {
   }
 
   #tokenList: TokenList
+  @property()
+  info
+
   @provide({ context: createContext('tokens') })
   tokens
 
@@ -148,7 +151,8 @@ export class AppShell extends LitElement {
 
       this.tokenOutputEl.amount = Math.round(ethers.formatUnits(String(quote.dstAmount)) * 100) / 100
 
-      this.swapInfo.value = quote
+      this.info = quote
+      this.requestUpdate('info')
     }
   }
 
@@ -240,6 +244,7 @@ export class AppShell extends LitElement {
     this.swapHero.inputToken = { amount: this.tokenInputEl.amount, ...this.tokenInputEl.selected }
     this.swapHero.outputToken = { amount: this.tokenOutputEl.amount, ...this.tokenOutputEl.selected }
     this.swapHero.shown = true
+    this.swapHero.info = this.info
   }
 
   swapInput() {
@@ -282,7 +287,9 @@ export class AppShell extends LitElement {
           action="buy"
           @token-select=${this.buyTokenSelect}
           .selected=${this.babyfox}></token-input>
-        ${this.selectedAccount ? html`<swap-tokens></swap-tokens>` : html`<connect-wallet></connect-wallet>`}
+        ${this.selectedAccount
+          ? html`<swap-tokens ?disabled=${!this.info}></swap-tokens>`
+          : html`<connect-wallet></connect-wallet>`}
       </hero-element>
       <token-selector></token-selector>
 

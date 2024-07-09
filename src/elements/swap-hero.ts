@@ -4,12 +4,15 @@ import '@material/web/iconbutton/icon-button.js'
 import '@vandeurenglenn/lit-elements/icon.js'
 import { customElement, property } from 'lit/decorators.js'
 import './token-input.js'
+import './swap/info.js'
 
 @customElement('swap-hero')
 export default class SwapHero extends LitElement {
   @property() inputToken
 
   @property() outputToken
+
+  @property() info
 
   @property({ reflect: true, type: Boolean }) shown
 
@@ -75,6 +78,7 @@ export default class SwapHero extends LitElement {
       }
 
       md-filled-button {
+        margin: 12px 0;
         font-weight: 700;
         height: 56px;
         cursor: pointer;
@@ -106,6 +110,7 @@ export default class SwapHero extends LitElement {
         display: flex;
         width: 100%;
         align-items: center;
+        padding-bottom: 12px;
       }
 
       img {
@@ -131,18 +136,18 @@ export default class SwapHero extends LitElement {
         <div class="container">
           <h3>sell</h3>
           <span class="row">
-            <strong>${this.inputToken.amount}</strong>
+            <strong>${this.inputToken?.amount}</strong>
             <span class="flex"></span>
-            <img src=${this.inputToken.icon.color} />
+            <img src=${this.inputToken?.icon.color} />
           </span>
 
           <h3>buy</h3>
           <span class="row">
-            <strong>${this.outputToken.amount}</strong>
+            <strong>${this.outputToken?.amount}</strong>
             <span class="flex"></span>
-            <img src=${this.outputToken.icon.color} />
+            <img src=${this.outputToken?.icon.color} />
           </span>
-          <span class="flex"></span>
+          <swap-info .value=${this.info}></swap-info>
           <md-filled-button>confirm</md-filled-button>
         </div>
       </hero-element>
