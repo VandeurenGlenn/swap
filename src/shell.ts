@@ -73,6 +73,10 @@ export class AppShell extends LitElement {
   @property()
   selectedAccount
 
+  @provide({ context: createContext('swap-info') })
+  @property()
+  swapInfo
+
   @provide({ context: createContext('accounts') })
   @property()
   accounts
@@ -117,8 +121,20 @@ export class AppShell extends LitElement {
     }
   }
 
+  resetInputs = () => {
+    const inputs = this.shadowRoot?.querySelectorAll('token-input')
+    inputs[0].reset()
+    inputs[1].reset()
+    inputs[0].requestUpdate()
+    inputs[1].requestUpdate()
+  }
+
   #tokenInputChange = async ({ detail }: CustomEvent) => {
     if (detail === '') {
+      this.swapInfo = undefined
+      this.resetInputs()
+      return
+    } else if (detail === '0' || detail === '0.') {
       return
     }
     const tokenInput = this.tokenInputEl.selected
@@ -151,8 +167,8 @@ export class AppShell extends LitElement {
 
       this.tokenOutputEl.amount = Math.round(ethers.formatUnits(String(quote.dstAmount)) * 100) / 100
 
-      this.info = quote
-      this.requestUpdate('info')
+      this.swapInfo = undefined
+      this.swapInfo = quote
     }
   }
 
@@ -244,7 +260,6 @@ export class AppShell extends LitElement {
     this.swapHero.inputToken = { amount: this.tokenInputEl.amount, ...this.tokenInputEl.selected }
     this.swapHero.outputToken = { amount: this.tokenOutputEl.amount, ...this.tokenOutputEl.selected }
     this.swapHero.shown = true
-    this.swapHero.info = this.info
   }
 
   swapInput() {
@@ -252,8 +267,7 @@ export class AppShell extends LitElement {
     const selectedSell = inputs[0].selected
     const selectedBuy = inputs[1].selected
 
-    inputs[0].reset()
-    inputs[1].reset()
+    this.resetInputs()
 
     inputs[0].selected = selectedBuy
     inputs[1].selected = selectedSell
@@ -288,7 +302,7 @@ export class AppShell extends LitElement {
           @token-select=${this.buyTokenSelect}
           .selected=${this.babyfox}></token-input>
         ${this.selectedAccount
-          ? html`<swap-tokens ?disabled=${!this.info}></swap-tokens>`
+          ? html`<swap-tokens ?disabled=${!this.swapInfo}></swap-tokens>`
           : html`<connect-wallet></connect-wallet>`}
       </hero-element>
       <token-selector></token-selector>

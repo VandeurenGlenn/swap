@@ -28,6 +28,11 @@ export class SwapTokens extends LitElement {
       :host([disabled]) {
         pointer-events: none;
       }
+
+      :host([disabled]) md-filled-button {
+        --md-filled-button-container-color: var(--special-accent-disabled);
+        --md-filled-button-label-text-color: var(--on-special-accent-disabled);
+      }
     `
   ]
 

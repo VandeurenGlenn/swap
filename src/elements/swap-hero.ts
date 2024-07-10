@@ -5,6 +5,7 @@ import '@vandeurenglenn/lit-elements/icon.js'
 import { customElement, property } from 'lit/decorators.js'
 import './token-input.js'
 import './swap/info.js'
+import * as ethers from './../../node_modules/ethers/dist/ethers.min.js'
 
 @customElement('swap-hero')
 export default class SwapHero extends LitElement {
@@ -23,6 +24,31 @@ export default class SwapHero extends LitElement {
   async #click(event) {
     console.log(event.target)
     if (event.target.dataset.action === 'close') this.shown = false
+    if (event.target.dataset.action === 'swap') {
+      if (this.inputToken.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+      } else {
+        const response = await fetch(
+          `https://swap.leofcoin.org/approve?chainId=${
+            document.querySelector('app-shell').chain.chainId
+          }&tokenAddress=${this.inputToken.address}&amount=${ethers.parseUnits(this.inputToken.amount)}`
+        )
+
+        const { tx } = await response.json()
+        const signed = await globalThis.signer.sendTransaction(tx)
+      }
+
+      const response = await fetch(
+        `https://swap.leofcoin.org/swap?chainId=${document.querySelector('app-shell').chain.chainId}&tokenIn=${
+          this.inputToken.address
+        }&tokenOut=${this.outputToken.address}&amount=${ethers.parseUnits(
+          this.inputToken.amount
+        )}&from=${await globalThis.signer.getAddress()}`
+      )
+
+      const { tx } = await response.json()
+      const signed = await globalThis.signer.sendTransaction(tx)
+      this.shown = false
+    }
   }
 
   static styles = [
@@ -148,7 +174,7 @@ export default class SwapHero extends LitElement {
             <img src=${this.outputToken?.icon.color} />
           </span>
           <swap-info .value=${this.info}></swap-info>
-          <md-filled-button>confirm</md-filled-button>
+          <md-filled-button data-action="swap">approve & swap</md-filled-button>
         </div>
       </hero-element>
     `

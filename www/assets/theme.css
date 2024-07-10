@@ -25,4 +25,7 @@ body {
   --scrim: rgb(0 0 0 / 40%);
 
   --error: #ff7575;
+
+  --special-accent-disabled: rgb(255 179 117 / 23%);
+  --on-special-accent-disabled: rgb(255 183 113 / 63%);
 }

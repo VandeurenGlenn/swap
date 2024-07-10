@@ -1,7 +1,8 @@
-import { BrowserProvider } from 'ethers'
+import { BrowserProvider, JsonRpcSigner } from 'ethers'
 
 declare global {
   var provider: BrowserProvider
+  var signer: JsonRpcSigner
 }
 
 export default async (walletProvider = 'metamask') => {
@@ -14,13 +15,14 @@ export default async (walletProvider = 'metamask') => {
     const ethers = await import('../node_modules/ethers/dist/ethers.js')
     // console.log({importee});
     // const Web3Provider = importee.default.Web3Provider
-    const provider = new ethers.BrowserProvider(globalThis.ethereum, 'any')
+    const provider = new ethers.BrowserProvider(globalThis.ethereum, 'any') as BrowserProvider
+    globalThis.provider = provider
     // Prompt user for account connections
     const accounts = await provider.send('eth_requestAccounts', [])
     const signer = await provider.getSigner()
 
-    globalThis.connector = signer
-    globalThis.provider = provider
+    globalThis.signer = signer as JsonRpcSigner
+    globalThis.connector = signer as JsonRpcSigner
 
     const address = await signer.getAddress()
     globalThis.connector.accounts = accounts

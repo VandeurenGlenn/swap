@@ -34,13 +34,15 @@ export class TokenInput extends LitElement {
     this.timeout = setTimeout(() => {
       this.errorShown = false
       this.amount = this.shadowRoot?.querySelector('input').value
-      document.dispatchEvent(new CustomEvent('token-input-change', { detail: this.amount }))
+      document.dispatchEvent(new CustomEvent('token-input-change', { detail: this.amount.replace(',', '.') }))
     }, 300)
   }
 
   reset() {
-    this.input.value = null
     this.errorShown = false
+    this.amount = null
+    this.selected = undefined
+    this.input.value = null
   }
 
   static styles = [
@@ -130,7 +132,9 @@ export class TokenInput extends LitElement {
       <md-elevation level="1"></md-elevation>
       <span>${this.action}</span>
       <span class="row">
-        <input placeholder="0" / type="number" value=${this.amount ?? ''}>
+        <input
+          placeholder="0"
+          .value=${this.amount ?? ''} />
         ${this.nonInteractive
           ? html`<img src=${this.selected?.icon?.color} />`
           : html`<token-select
