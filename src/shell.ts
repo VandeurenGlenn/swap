@@ -10,6 +10,7 @@ import './elements/swap-tokens.js'
 import './elements/token-input-swap.js'
 import './elements/hero.js'
 import './elements/connect-hero.js'
+import './elements/disconnect/hero.js'
 import './elements/swap-hero.js'
 import './elements/connect-wallet.js'
 import TokenList from './token-list.js'
@@ -87,6 +88,8 @@ export class AppShell extends LitElement {
   @property() quote
 
   @query('connect-hero') connectHero
+
+  @query('disconnect-hero') disconnectHero
 
   @query('swap-hero') swapHero
 
@@ -256,10 +259,22 @@ export class AppShell extends LitElement {
     this.connectHero.shown = true
   }
 
+  disconnect() {
+    localStorage.removeItem('selectedWalletProvider')
+    localStorage.removeItem('wallet-connected')
+    this.accounts = undefined
+    this.selectedAccount = undefined
+    connector.disconnect()
+  }
+
   showSwapHero() {
     this.swapHero.inputToken = { amount: this.tokenInputEl.amount, ...this.tokenInputEl.selected }
     this.swapHero.outputToken = { amount: this.tokenOutputEl.amount, ...this.tokenOutputEl.selected }
     this.swapHero.shown = true
+  }
+
+  showDisconnectHero() {
+    this.disconnectHero.shown = true
   }
 
   swapInput() {
@@ -308,6 +323,7 @@ export class AppShell extends LitElement {
       <token-selector></token-selector>
 
       <connect-hero></connect-hero>
+      <disconnect-hero></disconnect-hero>
       <swap-hero></swap-hero>
     `
   }

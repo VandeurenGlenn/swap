@@ -116,11 +116,13 @@ export class AccountElement extends LitElement {
 
   render() {
     return html`
-      <md-filled-button @click=${() => (this.open = !this.open)}>
+      <md-filled-button
+        @click=${() =>
+          this.selectedAccount ? (this.open = !this.open) : document.querySelector('app-shell').showConnectHero()}>
         <span class="row">
           ${this.selectedAccount
             ? html` <account-item .account=${this.selectedAccount}></account-item> `
-            : html`<strong style="margin-left: 6px;">connect</strong>`}
+            : html`<strong>connect</strong>`}
         </span>
       </md-filled-button>
 
@@ -128,7 +130,9 @@ export class AccountElement extends LitElement {
         <h3>select network</h3>
         <network-select></network-select>
         <span class="flex"></span>
-        <md-filled-button>disconnect</md-filled-button>
+        <md-filled-button @click=${() => document.querySelector('app-shell').showDisconnectHero()}
+          >disconnect</md-filled-button
+        >
       </span>
     `
   }
