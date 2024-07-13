@@ -1,9 +1,9 @@
 import { LitElement, html, css, PropertyValueMap } from 'lit'
 import { consume, createContext } from '@lit/context'
 import { customElement, property, query } from 'lit/decorators.js'
-import '../array-repeat.js'
+import './../../array-repeat.js'
 import '@material/web/button/filled-tonal-button.js'
-import './hero.js'
+import './../hero.js'
 
 @customElement('token-selector')
 export class TokenSelector extends LitElement {

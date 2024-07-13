@@ -3,9 +3,9 @@ import '@material/web/button/filled-button.js'
 import '@material/web/iconbutton/icon-button.js'
 import '@vandeurenglenn/lit-elements/icon.js'
 import { customElement, property } from 'lit/decorators.js'
-import './token-input.js'
-import './swap/info.js'
-import * as ethers from './../../node_modules/ethers/dist/ethers.min.js'
+import './../token/input.js'
+import './info.js'
+import * as ethers from './../../../node_modules/ethers/dist/ethers.min.js'
 
 @customElement('swap-hero')
 export default class SwapHero extends LitElement {

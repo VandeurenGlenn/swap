@@ -30,7 +30,7 @@ export default class ConnectHero extends LitElement {
   }
 
   async #connect() {
-    const importee = await import('./../connect.js')
+    const importee = await import('./../../connect.js')
     return importee.default(this.selectedWalletProvider)
   }
 

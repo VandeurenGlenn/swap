@@ -1,18 +1,19 @@
 import { LitElement, html, css, PropertyValueMap } from 'lit'
+import { guard } from 'lit/directives/guard.js'
 import { provide, createContext } from '@lit/context'
 import { customElement, property, query } from 'lit/decorators.js'
 import '@vandeurenglenn/lit-elements/icon-set.js'
 import './elements/network/select.js'
 import './elements/account/element.js'
-import './elements/token-select.js'
-import './elements/token-input.js'
-import './elements/swap-tokens.js'
-import './elements/token-input-swap.js'
+import './elements/token/select.js'
+import './elements/token/input.js'
+import './elements/swap/tokens.js'
+import './elements/token/input-swap.js'
 import './elements/hero.js'
-import './elements/connect-hero.js'
+import './elements/connect/hero.js'
 import './elements/disconnect/hero.js'
-import './elements/swap-hero.js'
-import './elements/connect-wallet.js'
+import './elements/swap/hero.js'
+import './elements/connect/wallet.js'
 import TokenList from './token-list.js'
 import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
 import { getNativeCoin, getNetworkChainId } from './api.js'
@@ -133,6 +134,8 @@ export class AppShell extends LitElement {
   }
 
   #tokenInputChange = async ({ detail }: CustomEvent) => {
+    console.log({ detail })
+
     if (detail === '') {
       this.swapInfo = undefined
       this.resetInputs()
@@ -167,9 +170,9 @@ export class AppShell extends LitElement {
       )
       const quote = await response.json()
       console.log(quote)
-
-      this.tokenOutputEl.amount = Math.round(ethers.formatUnits(String(quote.dstAmount)) * 100) / 100
-
+      const units = ethers.formatUnits(String(quote.dstAmount))
+      if (units < 1) this.tokenOutputEl.amount = units
+      else this.tokenOutputEl.amount = Math.round(units * 100) / 100
       this.swapInfo = undefined
       this.swapInfo = quote
     }
@@ -196,7 +199,7 @@ export class AppShell extends LitElement {
 
   async updateTokens() {
     this.#tokenList = new TokenList(this.dex, this.chain.name)
-    if (!customElements.get('token-selector')) await import('./elements/token-selector.js')
+    if (!customElements.get('token-selector')) await import('./elements/token/selector.js')
   }
 
   static styles = [
@@ -237,20 +240,22 @@ export class AppShell extends LitElement {
 
   async sellTokenSelect() {
     this.#currentSelectedInput = 'sell'
-    this.tokenSelector.show()
     const tokens = await this.#tokenList.getList()
+    this.tokenSelector.show()
     const native = getNativeCoin(this.chain.chainId)
     tokens[native.symbol] = native
+    tokens[this.babyfox.symbol] = this.babyfox
     this.tokens = tokens
     this.tokenSelector.requestUpdate()
   }
 
   async buyTokenSelect() {
     this.#currentSelectedInput = 'buy'
-    this.tokenSelector.show()
     const tokens = await this.#tokenList.getList()
+    this.tokenSelector.show()
     const native = getNativeCoin(this.chain.chainId)
     tokens[native.symbol] = native
+    tokens[this.babyfox.symbol] = this.babyfox
     this.tokens = tokens
     this.tokenSelector.requestUpdate()
   }
@@ -306,16 +311,27 @@ export class AppShell extends LitElement {
       <img src="./assets/logo.webp" />
       <h1 class="title">FoxSwap</h1>
       <hero-element>
-        <token-input
-          .selected=${getNativeCoin(this.chain.chainId)}
-          action="sell"
-          @token-select=${this.sellTokenSelect}></token-input>
+        ${guard(
+          this.chain.chainId,
+          () => html`
+            <token-input
+              .selected=${getNativeCoin(this.chain.chainId)}
+              action="sell"
+              @token-select=${this.sellTokenSelect}></token-input>
+          `
+        )}
+
         <token-input-swap @click=${this.swapInput}></token-input-swap>
-        <token-input
-          no-input
-          action="buy"
-          @token-select=${this.buyTokenSelect}
-          .selected=${this.babyfox}></token-input>
+        ${guard(
+          this.babyfox,
+          () => html`
+            <token-input
+              no-input
+              action="buy"
+              @token-select=${this.buyTokenSelect}
+              .selected=${this.babyfox}></token-input>
+          `
+        )}
         ${this.selectedAccount
           ? html`<swap-tokens ?disabled=${!this.swapInfo}></swap-tokens>`
           : html`<connect-wallet></connect-wallet>`}

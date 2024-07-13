@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValueMap } from 'lit'
 import { consume, createContext } from '@lit/context'
 import { customElement, property } from 'lit/decorators.js'
-import '../array-repeat.js'
+import './../../array-repeat.js'
 import '@material/web/button/filled-button.js'
 
 import '@vandeurenglenn/lit-elements/icon.js'

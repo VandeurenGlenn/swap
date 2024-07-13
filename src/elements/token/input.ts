@@ -72,7 +72,7 @@ export class TokenInput extends LitElement {
         width: 100%;
         border: none;
         outline: none;
-        font-size: 32px;
+        font-size: 24px;
         background-color: transparent;
         color: var(--on-surface-1);
       }
