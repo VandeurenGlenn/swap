@@ -10,8 +10,6 @@ export class TokenSelector extends LitElement {
   @consume({ context: createContext('tokens'), subscribe: true })
   tokens
 
-  @property({ attribute: 'default-selected' }) defaultSelected
-
   @property() selected
   @property({ reflect: true, type: Boolean }) shown
 
@@ -41,6 +39,12 @@ export class TokenSelector extends LitElement {
         align-items: center;
         padding: 12px;
         box-sizing: border-box;
+        cursor: pointer;
+      }
+
+      img,
+      .column {
+        pointer-events: auto;
       }
 
       .column {
@@ -104,8 +108,6 @@ export class TokenSelector extends LitElement {
   ]
 
   #change = () => {
-    console.log('vl')
-
     if (!this.tokensBackup) this.tokensBackup = JSON.parse(JSON.stringify(this.tokens))
 
     if (this.timeout) clearTimeout(this.timeout)
@@ -126,22 +128,18 @@ export class TokenSelector extends LitElement {
 
   #click = ({ target }: CustomEvent) => {
     const action = target.dataset.action
-    console.log({ action })
-
     if (action) {
       switch (action) {
         case 'close':
           this.shown = false
           break
+        case 'select':
+          this.shown = false
+          this.dispatchEvent(new CustomEvent('select', { detail: this.tokens[target.dataset.symbol] }))
+          break
         default:
           break
       }
-    }
-  }
-
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('defaultSelected') && this.defaultSelected) {
-      this.selected = this.defaultSelected
     }
   }
 
@@ -171,11 +169,17 @@ export class TokenSelector extends LitElement {
               .items=${this.tokens}
               name-space="item">
               <template
-                ><span class="item">
+                ><span
+                  class="item"
+                  data-action="select"
+                  data-symbol="[[item.symbol]]">
                   <img
+                    style="pointer-events: none;"
                     src="[[item.icon.color]]"
                     loading="lazy" />
-                  <span class="column">
+                  <span
+                    class="column"
+                    style="pointer-events: none;">
                     <span class="name">[[item.name]]</span>
                     <span class="symbol">[[item.symbol]]</span>
                   </span>

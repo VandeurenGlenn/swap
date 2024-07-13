@@ -100,19 +100,11 @@ export class AppShell extends LitElement {
 
   @query('token-input[action="buy"]') tokenOutputEl
 
-  tokenSelectorChange({ detail }: CustomEvent) {
-    console.log({ detail })
-  }
-
   #networkchange = ({ detail }: CustomEvent) => {
-    console.log({ detail })
-
     this.selectedNetwork = detail
   }
 
   #accountchange = ({ detail }: CustomEvent) => {
-    console.log({ detail })
-
     if (Array.isArray(detail)) {
       this.selectedAccount = detail[0]
       this.accounts = detail
@@ -134,8 +126,6 @@ export class AppShell extends LitElement {
   }
 
   #tokenInputChange = async ({ detail }: CustomEvent) => {
-    console.log({ detail })
-
     if (detail === '') {
       this.swapInfo = undefined
       this.resetInputs()
@@ -146,9 +136,6 @@ export class AppShell extends LitElement {
     const tokenInput = this.tokenInputEl.selected
     const tokenOutput = this.tokenOutputEl.selected
     const amount = detail
-    console.log(this.selectedNetwork)
-    console.log({ tokenInput })
-    console.log({ tokenOutput })
 
     let balance
 
@@ -169,7 +156,6 @@ export class AppShell extends LitElement {
         }&amount=${ethers.parseUnits(amount)}&chainId=${this.selectedNetwork}`
       )
       const quote = await response.json()
-      console.log(quote)
       const units = ethers.formatUnits(String(quote.dstAmount))
       if (units < 1) this.tokenOutputEl.amount = units
       else this.tokenOutputEl.amount = Math.round(units * 100) / 100
@@ -238,26 +224,42 @@ export class AppShell extends LitElement {
     `
   ]
 
-  async sellTokenSelect() {
-    this.#currentSelectedInput = 'sell'
-    const tokens = await this.#tokenList.getList()
-    this.tokenSelector.show()
+  /**
+   * add native and babyfox to tokenlist
+   */
+  #appendTokenList(tokens) {
     const native = getNativeCoin(this.chain.chainId)
     tokens[native.symbol] = native
     tokens[this.babyfox.symbol] = this.babyfox
+  }
+
+  async sellTokenSelect() {
+    this.#currentSelectedInput = 'sell'
+    const tokens = await this.#tokenList.getList()
+    const onselect = ({ detail }) => {
+      this.tokenInputEl.selected = detail
+      this.tokenSelector.removeEventListener('select', onselect)
+    }
+
+    this.tokenSelector.addEventListener('select', onselect)
+    this.tokenSelector.show()
+    this.#appendTokenList(tokens)
+
     this.tokens = tokens
-    this.tokenSelector.requestUpdate()
   }
 
   async buyTokenSelect() {
     this.#currentSelectedInput = 'buy'
     const tokens = await this.#tokenList.getList()
+    const onselect = ({ detail }) => {
+      this.tokenOutputEl.selected = detail
+      this.tokenSelector.removeEventListener('select', onselect)
+    }
+
+    this.tokenSelector.addEventListener('select', onselect)
     this.tokenSelector.show()
-    const native = getNativeCoin(this.chain.chainId)
-    tokens[native.symbol] = native
-    tokens[this.babyfox.symbol] = this.babyfox
+    this.#appendTokenList(tokens)
     this.tokens = tokens
-    this.tokenSelector.requestUpdate()
   }
 
   showConnectHero() {
