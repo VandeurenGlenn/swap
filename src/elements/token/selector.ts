@@ -112,15 +112,16 @@ export class TokenSelector extends LitElement {
 
     if (this.timeout) clearTimeout(this.timeout)
     this.timeout = setTimeout(() => {
+      const value = this.input.value
       this.arrayRepeat.reset()
       this.tokens = Object.values(this.tokensBackup).filter(
         (token) =>
-          token.name.toLowerCase().includes(this.input.value) ||
-          token.symbol.toLowerCase().includes(this.input.value) ||
-          token.address.includes(this.input.value)
+          token.name.toLowerCase().includes(value) ||
+          token.symbol.toLowerCase().includes(value) ||
+          token.address.includes(value)
       )
-      if (this.tokens.length === 0) {
-        alert('import')
+      if (this.tokens.length === 0 && value.startsWith('0x') && value.length === 42) {
+        document.querySelector('app-shell').showImportHero()
       }
       this.requestUpdate()
     }, 100)

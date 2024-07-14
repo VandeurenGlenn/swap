@@ -10,6 +10,7 @@ import './elements/token/input.js'
 import './elements/swap/tokens.js'
 import './elements/token/input-swap.js'
 import './elements/hero.js'
+import './elements/import-hero.js'
 import './elements/connect/hero.js'
 import './elements/disconnect/hero.js'
 import './elements/swap/hero.js'
@@ -89,6 +90,8 @@ export class AppShell extends LitElement {
   @property() quote
 
   @query('connect-hero') connectHero
+
+  @query('import-hero') importHero
 
   @query('disconnect-hero') disconnectHero
 
@@ -211,6 +214,15 @@ export class AppShell extends LitElement {
         flex: 1;
       }
 
+      img {
+        border-radius: var(--border-radius-extra-large);
+        padding: 6px;
+        height: 220px;
+        width: 220px;
+        border-radius: 50%;
+        box-sizing: border-box;
+        margin-bottom: 96px;
+      }
       header {
         display: flex;
         position: absolute;
@@ -221,16 +233,36 @@ export class AppShell extends LitElement {
         padding: 6px 12px;
         box-sizing: border-box;
       }
+
+      @media (max-width: 959px) {
+        swap-tokens,
+        connect-wallet {
+          position: fixed;
+          bottom: 12px;
+          right: 12px;
+          left: 12px;
+          box-sizing: border-box;
+          width: -webkit-fill-available;
+        }
+      }
     `
   ]
 
   /**
-   * add native and babyfox to tokenlist
+   * add native, babyfox and imported tokens to tokenlist
    */
   #appendTokenList(tokens) {
     const native = getNativeCoin(this.chain.chainId)
     tokens[native.symbol] = native
     tokens[this.babyfox.symbol] = this.babyfox
+
+    const imported = localStorage.getItem('imported-tokens')
+    if (imported) {
+      const importedTokens = JSON.parse(imported)
+      for (const token of importedTokens) {
+        tokens[token.symbol] = token
+      }
+    }
   }
 
   async sellTokenSelect() {
@@ -264,6 +296,11 @@ export class AppShell extends LitElement {
 
   showConnectHero() {
     this.connectHero.shown = true
+  }
+
+  showImportHero(address) {
+    this.importHero.address = address
+    this.importHero.shown = true
   }
 
   disconnect() {
@@ -310,8 +347,7 @@ export class AppShell extends LitElement {
         <span class="flex"></span>
         <account-element></account-element>
       </header>
-      <img src="./assets/logo.webp" />
-      <h1 class="title">FoxSwap</h1>
+      <img src="./assets/babyfox.webp" />
       <hero-element>
         ${guard(
           this.chain.chainId,
@@ -339,7 +375,7 @@ export class AppShell extends LitElement {
           : html`<connect-wallet></connect-wallet>`}
       </hero-element>
       <token-selector></token-selector>
-
+      <import-hero></import-hero>
       <connect-hero></connect-hero>
       <disconnect-hero></disconnect-hero>
       <swap-hero></swap-hero>
