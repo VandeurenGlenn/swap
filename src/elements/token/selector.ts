@@ -104,6 +104,10 @@ export class TokenSelector extends LitElement {
       custom-icon {
         --custom-icon-color: var(--on-surface-2);
       }
+
+      input {
+        color: var(--on-surface-2);
+      }
     `
   ]
 
@@ -121,7 +125,7 @@ export class TokenSelector extends LitElement {
           token.address.includes(value)
       )
       if (this.tokens.length === 0 && value.startsWith('0x') && value.length === 42) {
-        document.querySelector('app-shell').showImportHero()
+        document.querySelector('app-shell').showImportHero(value)
       }
       this.requestUpdate()
     }, 100)

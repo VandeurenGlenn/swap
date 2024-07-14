@@ -1,14 +1,63 @@
-import { LitElement, PropertyValueMap, css, html } from 'lit'
+import { LitElement, PropertyValueMap, PropertyValues, css, html } from 'lit'
 import '@material/web/button/filled-button.js'
 import '@material/web/iconbutton/icon-button.js'
 import '@vandeurenglenn/lit-elements/icon.js'
 import { customElement, property } from 'lit/decorators.js'
+import * as ethers from './../../node_modules/ethers/dist/ethers.min.js'
+import ERC20 from '../ABI/ERC20.js'
 
 @customElement('import-hero')
 export default class ImportHero extends LitElement {
   @property({ reflect: true, type: Boolean }) shown
 
   @property() address
+  @property() name
+  @property() symbol
+  @property() logo
+
+  #click = ({ target }: CustomEvent) => {
+    const action = target.dataset.action
+    if (action === 'close') this.shown = false
+    else if (action === 'import') {
+      const imported = localStorage.getItem('imported-tokens')
+      if (imported) {
+        const importedTokens = JSON.parse(imported)
+        importedTokens[this.symbol] = {
+          address: this.address,
+          symbol: this.symbol,
+          name: this.name,
+          icon: {
+            color: 'https://raw.githubusercontent.com/CoinsSwap/token-list/main/build/icons/color/generic.svg'
+          }
+        }
+      } else {
+        const imported = {}
+        imported[this.symbol] = {
+          address: this.address,
+          symbol: this.symbol,
+          name: this.name,
+          icon: {
+            color: 'https://raw.githubusercontent.com/CoinsSwap/token-list/main/build/icons/color/generic.svg'
+          }
+        }
+
+        localStorage.setItem('imported-tokens', JSON.stringify(imported))
+      }
+    }
+  }
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    this.shadowRoot?.addEventListener('click', this.#click)
+  }
+
+  protected async willUpdate(_changedProperties: PropertyValues) {
+    if (_changedProperties.has('address')) {
+      const contract = new ethers.Contract(this.address, ERC20, await provider.getSigner())
+      this.symbol = await contract.symbol()
+      this.name = await contract.name()
+      this.logo = 'https://raw.githubusercontent.com/CoinsSwap/token-list/main/build/icons/color/generic.svg'
+    }
+  }
 
   static styles = [
     css`
@@ -34,7 +83,7 @@ export default class ImportHero extends LitElement {
         background: var(--surface-1);
         padding: 12px;
         box-sizing: border-box;
-        max-height: 322px;
+        max-height: 520px;
         height: 100%;
       }
 
@@ -83,26 +132,45 @@ export default class ImportHero extends LitElement {
         font-weight: 500;
         font-size: 18px;
       }
+
+      .container {
+        box-sizing: border-box;
+        padding: 12px;
+      }
+
+      small {
+        margin-bottom: 24px;
+        margin-left: 12px;
+      }
     `
   ]
 
   render() {
     return html`
-      <div style="height: 158px;"></div>
       <hero-element>
         <span class="header">
           <h4>import</h4>
           <span class="flex"></span>
           <md-icon-button data-action="close"><custom-icon icon="cancel"></custom-icon></md-icon-button>
         </span>
-        <strong>${this.address}</strong>
-        <p class="question">are you sure you want to import above token?</p>
+        <div class="container">
+        <img src=${this.logo}></img>
+          <h3>contract</h3>
+
+          <strong>${this.address}</strong>
+
+          <h3>name</h3>
+
+          <strong>${this.name}</strong>
+
+          <h3>symbol</h3>
+
+          <strong>${this.symbol}</strong>
+        </div>
 
         <span class="flex"></span>
         <small>note: please make sure to do your research!</small>
-
-        <span class="flex"></span>
-        <md-filled-button data-action="disconnect">disconnect</md-filled-button>
+        <md-filled-button data-action="import">import</md-filled-button>
       </hero-element>
     `
   }

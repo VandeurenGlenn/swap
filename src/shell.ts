@@ -259,7 +259,7 @@ export class AppShell extends LitElement {
     const imported = localStorage.getItem('imported-tokens')
     if (imported) {
       const importedTokens = JSON.parse(imported)
-      for (const token of importedTokens) {
+      for (const token of Object.values(importedTokens)) {
         tokens[token.symbol] = token
       }
     }
