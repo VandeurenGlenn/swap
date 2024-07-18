@@ -41,17 +41,6 @@ export default [
       nodeResolve({ browser: true }),
       typescript(),
       nodePolyfill()
-    ],
-    external: ['./wallet-connect/wallet-connect.js', 'wallet-connect/wallet-connect.js']
-  },
-  {
-    input: ['./src/wallet-connect.ts'],
-    output: [
-      {
-        format: 'es',
-        dir: './www/wallet-connect'
-      }
-    ],
-    plugins: [commonjs(), nodeResolve({ browser: true }), typescript(), nodePolyfill()]
+    ]
   }
 ]

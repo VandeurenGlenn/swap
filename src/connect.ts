@@ -12,7 +12,7 @@ export default async (walletProvider = 'metamask') => {
   globalThis.walletProvider = walletProvider
   if (walletProvider === 'walletConnect') {
     // @ts-ignore
-    if (!globalThis.walletConnect) await import('./wallet-connect/wallet-connect.js')
+    if (!globalThis.walletConnect) await import('./wallet-connect.js')
 
     let session = await globalThis.walletConnect.getSession()
     console.log(session)
