@@ -41,3 +41,9 @@ run
 ```sh
 npm run build
 ```
+
+## shout-out
+
+- [@material/web](https://github.com/material-components/material-web)
+- [lit](https://lit.dev)
+- [chainmap](https://github.com/CryptoKass/chainmap)

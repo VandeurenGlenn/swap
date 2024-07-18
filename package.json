@@ -18,9 +18,15 @@
     "@material/web": "^1.5.1",
     "@multiavatar/multiavatar": "^1.0.7",
     "@vandeurenglenn/lit-elements": "^0.3.36",
+    "@vandeurenglenn/little-pubsub": "^1.4.7",
     "@walletconnect/client": "^1.8.0",
+    "@walletconnect/modal": "^2.6.2",
     "@walletconnect/qrcode-modal": "^1.8.0",
-    "@web3modal/ethers": "^5.0.4",
+    "@walletconnect/sign-client": "^2.13.3",
+    "@walletconnect/universal-provider": "^2.13.3",
+    "@walletconnect/web3wallet": "^1.12.3",
+    "@web3modal/ethers": "^5.0.6",
+    "chainmap": "^0.0.304",
     "ethers": "^6.13.1",
     "lit": "^3.1.4"
   },
@@ -30,6 +36,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^4.18.0",
     "rollup-plugin-material-symbols": "^2.1.5",
+    "rollup-plugin-polyfill-node": "^0.13.0",
     "tslib": "^2.6.3"
   }
 }

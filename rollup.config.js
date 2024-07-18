@@ -4,6 +4,7 @@ import typescript from '@rollup/plugin-typescript'
 import { readdir, unlink } from 'fs/promises'
 import { join } from 'path'
 import materialSymbols from 'rollup-plugin-material-symbols'
+import nodePolyfill from 'rollup-plugin-polyfill-node'
 
 const cleanWWW = async () => {
   return {
@@ -12,12 +13,7 @@ const cleanWWW = async () => {
       try {
         const files = await readdir('www')
         for (const file of files) {
-          if (
-            file.endsWith('.js') &&
-            !file.includes('sw.js') &&
-            !file.includes('workbox') &&
-            !file.includes('wallet-connect')
-          )
+          if (file.endsWith('.js') && !file.includes('sw.js') && !file.includes('workbox'))
             await unlink(join('www', file))
         }
       } catch (error) {}
@@ -41,20 +37,21 @@ export default [
       materialSymbols({
         placeholderPrefix: 'symbol'
       }),
-      nodeResolve(),
-      typescript()
+      commonjs(),
+      nodeResolve({ browser: true }),
+      typescript(),
+      nodePolyfill()
     ],
-    external: ['./wallet-connect.js']
+    external: ['./wallet-connect/wallet-connect.js', 'wallet-connect/wallet-connect.js']
   },
   {
     input: ['./src/wallet-connect.ts'],
     output: [
       {
         format: 'es',
-        dir: './www',
-        sourceMap: true
+        dir: './www/wallet-connect'
       }
     ],
-    plugins: [commonjs(), nodeResolve({ browser: true }), typescript()]
+    plugins: [commonjs(), nodeResolve({ browser: true }), typescript(), nodePolyfill()]
   }
 ]

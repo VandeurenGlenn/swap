@@ -72,7 +72,7 @@ export class TokenInput extends LitElement {
         width: 100%;
         border: none;
         outline: none;
-        font-size: 24px;
+        font-size: 22px;
         background-color: transparent;
         color: var(--on-surface-1);
       }
@@ -133,6 +133,7 @@ export class TokenInput extends LitElement {
       <span>${this.action}</span>
       <span class="row">
         <input
+          maxlength="19"
           placeholder="0"
           .value=${this.amount ?? ''} />
         ${this.nonInteractive

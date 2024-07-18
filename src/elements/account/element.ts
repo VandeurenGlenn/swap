@@ -111,6 +111,10 @@ export class AccountElement extends LitElement {
         margin-left: 12px;
         color: var(--on-surface-2);
       }
+
+      custom-icon {
+        --custom-icon-color: var(--on-surface-2);
+      }
     `
   ]
 
@@ -127,8 +131,16 @@ export class AccountElement extends LitElement {
       </md-filled-button>
 
       <span class="pane">
-        <h3>select network</h3>
+        <span class="row"
+          ><custom-icon icon="cloud"></custom-icon><span class="flex"></span>
+          <h3>select network</h3></span
+        >
         <network-select></network-select>
+        <span class="row"
+          ><custom-icon icon="notifications"></custom-icon><span class="flex"></span>
+          <h3>activity</h3></span
+        >
+        <notification-manager></notification-manager>
         <span class="flex"></span>
         <md-filled-button @click=${() => document.querySelector('app-shell').showDisconnectHero()}
           >disconnect</md-filled-button

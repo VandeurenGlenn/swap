@@ -1,3 +1,4 @@
+import { pubsub } from './preload.js'
 import { LitElement, html, css, PropertyValueMap } from 'lit'
 import { guard } from 'lit/directives/guard.js'
 import { provide, createContext } from '@lit/context'
@@ -22,7 +23,8 @@ import ERC20 from './ABI/ERC20.js'
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
-  #currentSelectedInput
+  #tokenList: TokenList
+
   babyfox = {
     symbol: 'BABYFOX',
     name: 'babyfox',
@@ -30,38 +32,6 @@ export class AppShell extends LitElement {
     icon: { color: './assets/logo.webp' }
   }
 
-  #nativeTokens = {
-    1: {
-      icon: {
-        color: './assets/ethereum.svg'
-      },
-      name: 'Ethereum',
-      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      symbol: 'ETH'
-    },
-    56: {
-      icon: {
-        color: './assets/bsc.svg'
-      },
-      name: 'Binance',
-      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      symbol: 'BNB'
-    },
-    137: {
-      icon: {
-        color: './assets/polygon.svg'
-      },
-      name: 'Polygon',
-      address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      symbol: 'MATIC'
-    }
-  }
-
-  getNativeToken(chainId) {
-    return this.#nativeTokens[chainId]
-  }
-
-  #tokenList: TokenList
   @property()
   info
 
@@ -70,7 +40,20 @@ export class AppShell extends LitElement {
 
   @property() dex = 'pancakeswap'
 
-  @property({ type: Object }) chain = { name: 'binance', chainId: 56 }
+  _chain
+
+  @provide({ context: createContext('chain') })
+  @property({ type: Object })
+  chain = { name: 'binance', chainId: 56 }
+  set property(value) {
+    this._chain = value
+    this.selectedNetwork = value.chainId
+    pubsub.publish('chain-change', value.chainId ?? undefined)
+  }
+
+  get property() {
+    return this._chain
+  }
 
   @provide({ context: createContext('selected-account') })
   @property()
@@ -105,6 +88,9 @@ export class AppShell extends LitElement {
 
   #networkchange = ({ detail }: CustomEvent) => {
     this.selectedNetwork = detail
+    if (globalThis.provider && detail > 0) {
+      this.#tokenInputChange({ detail: this.shadowRoot.querySelector('token-input').amount })
+    }
   }
 
   #accountchange = ({ detail }: CustomEvent) => {
@@ -143,9 +129,9 @@ export class AppShell extends LitElement {
     let balance
 
     if (tokenInput.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-      balance = ethers.formatUnits(await provider.send('eth_getBalance', [this.selectedAccount]))
+      balance = ethers.formatUnits(await provider.getBalance(this.selectedAccount))
     } else {
-      const contract = new ethers.Contract(tokenInput.address, ERC20, await provider.getSigner())
+      const contract = new ethers.Contract(tokenInput.address, ERC20, provider)
 
       balance = ethers.formatUnits((await contract.balanceOf(this.selectedAccount)).toString())
     }
@@ -156,7 +142,7 @@ export class AppShell extends LitElement {
       const response = await fetch(
         `https://swap.leofcoin.org/quote?tokenIn=${tokenInput.address}&tokenOut=${
           tokenOutput.address
-        }&amount=${ethers.parseUnits(amount)}&chainId=${this.selectedNetwork}`
+        }&amount=${ethers.parseUnits(amount)}&chainId=${this.chain.chainId}`
       )
       const quote = await response.json()
       const units = ethers.formatUnits(String(quote.dstAmount))
@@ -233,7 +219,6 @@ export class AppShell extends LitElement {
         padding: 6px 12px;
         box-sizing: border-box;
       }
-
       @media (max-width: 959px) {
         swap-tokens,
         connect-wallet {
@@ -266,7 +251,6 @@ export class AppShell extends LitElement {
   }
 
   async sellTokenSelect() {
-    this.#currentSelectedInput = 'sell'
     const tokens = await this.#tokenList.getList()
     const onselect = ({ detail }) => {
       this.tokenInputEl.selected = detail
@@ -281,7 +265,6 @@ export class AppShell extends LitElement {
   }
 
   async buyTokenSelect() {
-    this.#currentSelectedInput = 'buy'
     const tokens = await this.#tokenList.getList()
     const onselect = ({ detail }) => {
       this.tokenOutputEl.selected = detail
@@ -336,11 +319,13 @@ export class AppShell extends LitElement {
     return html`
       <custom-icon-set name="icons">
         <template>
+          <span name="cloud">@symbol-cloud</span>
           <span name="swap_vert">@symbol-swap_vert</span>
           <span name="keyboard_arrow_down">@symbol-keyboard_arrow_down</span>
           <span name="keyboard_arrow_up">@symbol-keyboard_arrow_up</span>
           <span name="cancel">@symbol-cancel</span>
           <span name="error">@symbol-error</span>
+          <span name="notifications">@symbol-notifications</span>
         </template>
       </custom-icon-set>
       <header>

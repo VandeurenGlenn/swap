@@ -22,28 +22,38 @@ export const chainIds = [1, 56, 137]
 export const getNetworkChainId = (name) => chainIds[supportedNetworks.indexOf(name)]
 
 export const changeNetwork = async (chainId: number) => {
-  let id = ethers.toBeHex(chainId).toString()
-  if (id.split('0x')[1].startsWith('0')) id = id.replace('0x0', '0x')
-  try {
-    await globalThis.provider.send('wallet_switchEthereumChain', [{ chainId: id }])
-  } catch (error) {
-    console.log(chainId)
+  if (globalThis.walletProvider === 'metamask') {
+    let id = ethers.toBeHex(chainId).toString()
+    if (id.split('0x')[1].startsWith('0')) id = id.replace('0x0', '0x')
+    try {
+      await globalThis.provider.send('wallet_switchEthereumChain', [{ chainId: id }])
+    } catch (error) {
+      console.log(error)
 
-    if (Number(chainId) === 137) {
-      await globalThis.provider.send('wallet_addEthereumChain', [
-        {
-          chainId: id,
-          blockExplorerUrls: ['https://polygon-rpc.com'],
-          rpcUrls: ['https://polygon-rpc.com', 'https://polygon.llamarpc.com', 'https://1rpc.io/matic'],
-          chainName: 'Polygon Mainnet',
-          nativeCurrency: {
-            decimals: 18,
-            name: 'MATIC',
-            symbol: 'MATIC'
-          }
+      console.log(chainId)
+
+      if (Number(chainId) === 137) {
+        try {
+          await globalThis.provider.send('wallet_addEthereumChain', [
+            {
+              chainId: id,
+              blockExplorerUrls: ['https://polygon-rpc.com'],
+              rpcUrls: ['https://polygon-rpc.com', 'https://polygon.llamarpc.com', 'https://1rpc.io/matic'],
+              chainName: 'Polygon Mainnet',
+              nativeCurrency: {
+                decimals: 18,
+                name: 'MATIC',
+                symbol: 'MATIC'
+              }
+            }
+          ])
+        } catch (error) {
+          console.error(error)
         }
-      ])
+      }
     }
+  } else {
+    document.dispatchEvent(new CustomEvent('networkChange', { detail: chainId }))
   }
 }
 
