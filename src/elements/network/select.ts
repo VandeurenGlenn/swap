@@ -17,8 +17,6 @@ export class NetworkSelect extends LitElement {
 
   @property({ reflect: true, type: Boolean }) open
 
-  async change(chainId) {}
-
   #changeNetwork = ({ detail }) => {
     console.log({ detail })
 
@@ -43,6 +41,7 @@ export class NetworkSelect extends LitElement {
         --md-filled-button-leading-space: 14px;
         --md-filled-button-trailing-space: 14px;
         --md-filled-button-with-trailing-icon-leading-space: 6px;
+        --md-filled-button-container-shape: var(--border-radius);
         height: 56px;
       }
 

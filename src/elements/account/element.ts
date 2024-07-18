@@ -6,6 +6,7 @@ import '@material/web/button/filled-button.js'
 import '@vandeurenglenn/lit-elements/selector.js'
 import '@vandeurenglenn/lit-elements/icon.js'
 import './item.js'
+import './../notification/manager.js'
 
 @customElement('account-element')
 export class AccountElement extends LitElement {
@@ -88,7 +89,15 @@ export class AccountElement extends LitElement {
         flex: 1;
       }
 
-      .item {
+      .hoverable {
+        user-select: none;
+        border-radius: var(--border-radius);
+        box-sizing: border-box;
+        padding: 0 6px 12px 6px;
+      }
+
+      .hoverable:hover {
+        background-color: var(--surface-2);
       }
 
       strong {
@@ -108,7 +117,7 @@ export class AccountElement extends LitElement {
       }
 
       h3 {
-        margin-left: 12px;
+        margin-right: 12px;
         color: var(--on-surface-2);
       }
 
@@ -131,16 +140,21 @@ export class AccountElement extends LitElement {
       </md-filled-button>
 
       <span class="pane">
-        <span class="row"
-          ><custom-icon icon="cloud"></custom-icon><span class="flex"></span>
-          <h3>select network</h3></span
-        >
-        <network-select></network-select>
-        <span class="row"
-          ><custom-icon icon="notifications"></custom-icon><span class="flex"></span>
-          <h3>activity</h3></span
-        >
-        <notification-manager></notification-manager>
+        <section class="hoverable">
+          <span class="row"
+            ><custom-icon icon="cloud"></custom-icon><span class="flex"></span>
+            <h3>select network</h3></span
+          >
+          <network-select></network-select>
+        </section>
+        <section class="hoverable">
+          <span class="row hoverable"
+            ><custom-icon icon="notifications"></custom-icon><span class="flex"></span>
+            <h3>activity</h3></span
+          >
+          <notification-manager></notification-manager>
+        </section>
+
         <span class="flex"></span>
         <md-filled-button @click=${() => document.querySelector('app-shell').showDisconnectHero()}
           >disconnect</md-filled-button
