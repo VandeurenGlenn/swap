@@ -6,12 +6,11 @@ export class SwapTokens extends LitElement {
   static styles = [
     css`
       :host {
-        margin-top: 12px;
-        display: block;
-        width: 100%;
+        display: contents;
       }
 
       md-filled-button {
+        margin-top: 12px;
         width: 100%;
         height: 56px;
         font-size: 20px;

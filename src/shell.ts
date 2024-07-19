@@ -16,6 +16,8 @@ import './elements/connect/hero.js'
 import './elements/disconnect/hero.js'
 import './elements/swap/hero.js'
 import './elements/connect/wallet.js'
+import './elements/notification/manager.js'
+import './elements/notification/pane.js'
 import TokenList from './token-list.js'
 import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
 import { getNativeCoin, getNetworkChainId } from './api.js'
@@ -85,6 +87,8 @@ export class AppShell extends LitElement {
   @query('token-input[action="sell"]') tokenInputEl
 
   @query('token-input[action="buy"]') tokenOutputEl
+
+  @query('notification-pane') notificationPane
 
   #networkchange = ({ detail }: CustomEvent) => {
     this.selectedNetwork = detail
@@ -158,12 +162,21 @@ export class AppShell extends LitElement {
     this.tokenInputEl.errorShown = true
   }
 
+  #epochTimeout = () => {
+    document.dispatchEvent(new CustomEvent('epoch', { detail: Date.now() }))
+    setTimeout(() => {
+      this.#epochTimeout()
+    }, 1000)
+  }
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     document.addEventListener('token-selector-change', this.tokenSelectorChange)
     document.addEventListener('accountsChange', this.#accountchange)
     document.addEventListener('networkChange', this.#networkchange)
     document.addEventListener('token-input-change', this.#tokenInputChange)
     document.addEventListener('swap-balance-to-low', this.#swapBalanceToLow)
+
+    this.#epochTimeout()
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -182,13 +195,17 @@ export class AppShell extends LitElement {
       :host {
         display: flex;
         flex-direction: column;
+        overflow: hidden;
         align-items: center;
         justify-content: center;
         height: 100%;
         width: 100%;
         color: var(--md-sys-color-on-surface);
+        position: absolute;
+      }
 
-        background-color: var(--surface);
+      custom-icon {
+        --custom-icon-color: var(--on-surface-1);
       }
 
       .title {
@@ -201,23 +218,20 @@ export class AppShell extends LitElement {
       }
 
       img {
+        height: 48px;
         border-radius: var(--border-radius-extra-large);
-        padding: 6px;
-        height: 220px;
-        width: 220px;
-        border-radius: 50%;
-        box-sizing: border-box;
-        margin-bottom: 96px;
       }
       header {
         display: flex;
         position: absolute;
         top: 0;
-        left: 0;
-        right: 0;
         height: 56px;
         padding: 6px 12px;
         box-sizing: border-box;
+        width: 100%;
+        max-width: 1200px;
+        align-items: center;
+        height: 64px;
       }
       @media (max-width: 959px) {
         swap-tokens,
@@ -320,19 +334,32 @@ export class AppShell extends LitElement {
       <custom-icon-set name="icons">
         <template>
           <span name="cloud">@symbol-cloud</span>
+          <span name="delete">@symbol-delete</span>
           <span name="swap_vert">@symbol-swap_vert</span>
           <span name="keyboard_arrow_down">@symbol-keyboard_arrow_down</span>
           <span name="keyboard_arrow_up">@symbol-keyboard_arrow_up</span>
           <span name="cancel">@symbol-cancel</span>
           <span name="error">@symbol-error</span>
+          <span name="menu_open">@symbol-menu_open</span>
           <span name="notifications">@symbol-notifications</span>
         </template>
       </custom-icon-set>
       <header>
+        <img src="./assets/logo.webp" />
         <span class="flex"></span>
         <account-element></account-element>
+        <md-icon-button
+          data-action="toggle-notification-pane"
+          @click=${() => {
+            this.notificationPane.open = !this.notificationPane.open
+          }}
+          ><custom-icon icon="notifications"></custom-icon
+        ></md-icon-button>
       </header>
+      <!--
       <img src="./assets/babyfox.webp" />
+      <img src="./assets/FoxSwap.png" />
+      -->
       <hero-element>
         ${guard(
           this.chain.chainId,
@@ -362,6 +389,8 @@ export class AppShell extends LitElement {
       <token-selector></token-selector>
       <import-hero></import-hero>
       <connect-hero></connect-hero>
+      <notification-manager></notification-manager>
+      <notification-pane></notification-pane>
       <disconnect-hero></disconnect-hero>
       <swap-hero></swap-hero>
     `

@@ -7,7 +7,10 @@ import '@vandeurenglenn/lit-elements/selector.js'
 import '@vandeurenglenn/lit-elements/icon.js'
 import './item.js'
 import './../notification/manager.js'
-
+import { NotificationManager } from './../notification/manager.js'
+declare global {
+  var notificationManager: NotificationManager
+}
 @customElement('account-element')
 export class AccountElement extends LitElement {
   @consume({ context: createContext('selected-account'), subscribe: true })
@@ -16,13 +19,16 @@ export class AccountElement extends LitElement {
 
   @property({ reflect: true, type: Boolean }) open
 
-  async change(chainId) {}
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    globalThis.notificationManager = this.shadowRoot?.querySelector('notification-manager') as NotificationManager
+  }
 
   static styles = [
     css`
       :host {
         display: flex;
         flex-direction: row;
+        z-index: 4;
       }
 
       md-filled-button {
@@ -62,18 +68,17 @@ export class AccountElement extends LitElement {
         flex-direction: column;
         position: fixed;
         top: 70px;
-        right: 12px;
-        bottom: 12px;
         width: 240px;
-        transform: translateX(100%);
+        transform: translateY(-100%);
         background-color: var(--surface-1);
         border-radius: var(--border-radius-large);
-        transition: transform ease-out 120ms, opacity ease-out 120ms;
+        transition: transform ease-out 240ms, opacity ease-out 60ms;
         z-index: 3;
+        max-height: calc(100% - 80px);
       }
 
       :host([open]) .pane {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
         pointer-events: auto;
         transition: transform ease-in 120ms, opacity ease-in 260ms;
@@ -124,6 +129,12 @@ export class AccountElement extends LitElement {
       custom-icon {
         --custom-icon-color: var(--on-surface-2);
       }
+
+      .activity {
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: 0 6px 12px 6px;
+      }
     `
   ]
 
@@ -146,13 +157,6 @@ export class AccountElement extends LitElement {
             <h3>select network</h3></span
           >
           <network-select></network-select>
-        </section>
-        <section class="hoverable">
-          <span class="row hoverable"
-            ><custom-icon icon="notifications"></custom-icon><span class="flex"></span>
-            <h3>activity</h3></span
-          >
-          <notification-manager></notification-manager>
         </section>
 
         <span class="flex"></span>

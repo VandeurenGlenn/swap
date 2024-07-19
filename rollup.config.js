@@ -1,10 +1,15 @@
 import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import { readdir, unlink } from 'fs/promises'
+import { copyFile, mkdir, readdir, unlink } from 'fs/promises'
 import { join } from 'path'
 import materialSymbols from 'rollup-plugin-material-symbols'
 import nodePolyfill from 'rollup-plugin-polyfill-node'
+
+try {
+  await mkdir('www/lib')
+  await copyFile('./node_modules/particles.js/particles.js', 'www/lib/particles.js')
+} catch (error) {}
 
 const cleanWWW = async () => {
   return {
