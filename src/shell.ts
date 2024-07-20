@@ -280,7 +280,16 @@ export class AppShell extends LitElement {
 
   async buyTokenSelect() {
     const tokens = await this.#tokenList.getList()
-    const onselect = ({ detail }) => {
+    const onselect = async ({ detail }) => {
+      let balance
+      if (detail.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+        balance = ethers.formatUnits(await provider.getBalance(this.selectedAccount))
+      } else {
+        const contract = new ethers.Contract(detail.address, ERC20, provider)
+
+        balance = ethers.formatUnits((await contract.balanceOf(this.selectedAccount)).toString())
+      }
+      this.tokenOutputEl.balance = balance
       this.tokenOutputEl.selected = detail
       this.tokenSelector.removeEventListener('select', onselect)
     }
@@ -333,6 +342,7 @@ export class AppShell extends LitElement {
     return html`
       <custom-icon-set name="icons">
         <template>
+          <span name="account_balance">@symbol-account_balance</span>
           <span name="cloud">@symbol-cloud</span>
           <span name="delete">@symbol-delete</span>
           <span name="swap_vert">@symbol-swap_vert</span>

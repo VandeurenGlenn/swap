@@ -26,7 +26,7 @@ export const changeNetwork = async (chainId: number) => {
     let id = ethers.toBeHex(chainId).toString()
     if (id.split('0x')[1].startsWith('0')) id = id.replace('0x0', '0x')
     try {
-      await globalThis.provider.send('wallet_switchEthereumChain', [{ chainId: id }])
+      await globalThis.ethereum.send('wallet_switchEthereumChain', [{ chainId: id }])
     } catch (error) {
       console.log(error)
 
@@ -34,7 +34,7 @@ export const changeNetwork = async (chainId: number) => {
 
       if (Number(chainId) === 137) {
         try {
-          await globalThis.provider.send('wallet_addEthereumChain', [
+          await globalThis.ethereum.send('wallet_addEthereumChain', [
             {
               chainId: id,
               blockExplorerUrls: ['https://polygon-rpc.com'],

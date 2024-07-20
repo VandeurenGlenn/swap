@@ -9,6 +9,8 @@ export class TokenInput extends LitElement {
 
   @property() amount
 
+  @property() balance
+
   @property({ attribute: 'non-interactive', type: Boolean, reflect: true }) nonInteractive
 
   @property({ attribute: 'no-input', type: Boolean, reflect: true }) noInput
@@ -96,7 +98,8 @@ export class TokenInput extends LitElement {
         --custom-icon-color: var(--error);
       }
 
-      .error-message {
+      .error-message,
+      .balance {
         align-items: center;
         display: flex;
         bottom: 6px;
@@ -106,7 +109,8 @@ export class TokenInput extends LitElement {
         color: var(--error);
       }
 
-      :host([error-shown]) .error-message {
+      :host([error-shown]) .error-message,
+      :host(:not([error-shown])) .balance {
         transform: scale(1);
       }
 
@@ -123,6 +127,16 @@ export class TokenInput extends LitElement {
       /* Firefox */
       input[type='number'] {
         -moz-appearance: textfield;
+      }
+
+      .balance custom-icon {
+        --custom-icon-color: var(--on-surface-1);
+        height: 20px;
+        margin-right: 6px;
+      }
+
+      .balance {
+        color: var(--on-surface-1);
       }
     `
   ]
@@ -142,7 +156,9 @@ export class TokenInput extends LitElement {
               .selected=${this.selected}
               @token-select=${() => this.dispatchEvent(new CustomEvent('token-select'))}></token-select>`}
       </span>
-      <span class="error-message"><custom-icon icon="error"></custom-icon> ${this.errorMessage} </span>
+      ${this.errorShown
+        ? html`<span class="error-message"><custom-icon icon="error"></custom-icon> ${this.errorMessage} </span>`
+        : ''}
     `
   }
 }
