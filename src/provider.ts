@@ -32,4 +32,19 @@ export default class Provider {
     return this.#getBalance(address)
     // console.log(this.provider.)
   }
+  #send(method, params) {
+    if (this.providers.length > 0) {
+      try {
+        const balance = this.providers[0].send(method, params)
+        return balance
+      } catch {
+        this.providers.shift()
+        return this.#send(method, params)
+      }
+    }
+  }
+
+  send(method, params) {
+    return this.#send(method, params)
+  }
 }

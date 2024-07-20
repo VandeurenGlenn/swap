@@ -28,7 +28,6 @@ export class AccountElement extends LitElement {
       :host {
         display: flex;
         flex-direction: row;
-        z-index: 4;
       }
 
       md-filled-button {

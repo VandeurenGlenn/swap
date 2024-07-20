@@ -32,6 +32,7 @@ export class TokenSelector extends LitElement {
 
       hero-element {
         max-height: 640px;
+        height: 100%;
       }
 
       .item {

@@ -370,6 +370,14 @@ export class AppShell extends LitElement {
       <img src="./assets/babyfox.webp" />
       <img src="./assets/FoxSwap.png" />
       -->
+
+      <token-selector></token-selector>
+      <import-hero></import-hero>
+      <connect-hero></connect-hero>
+      <notification-manager></notification-manager>
+      <notification-pane></notification-pane>
+      <disconnect-hero></disconnect-hero>
+      <swap-hero></swap-hero>
       <hero-element>
         ${guard(
           this.chain.chainId,
@@ -396,13 +404,6 @@ export class AppShell extends LitElement {
           ? html`<swap-tokens ?disabled=${!this.swapInfo}></swap-tokens>`
           : html`<connect-wallet></connect-wallet>`}
       </hero-element>
-      <token-selector></token-selector>
-      <import-hero></import-hero>
-      <connect-hero></connect-hero>
-      <notification-manager></notification-manager>
-      <notification-pane></notification-pane>
-      <disconnect-hero></disconnect-hero>
-      <swap-hero></swap-hero>
     `
   }
 }
