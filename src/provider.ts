@@ -47,4 +47,20 @@ export default class Provider {
   send(method, params) {
     return this.#send(method, params)
   }
+
+  #call(tx) {
+    if (this.providers.length > 0) {
+      try {
+        const balance = this.providers[0].call(tx)
+        return balance
+      } catch {
+        this.providers.shift()
+        return this.#call(tx)
+      }
+    }
+  }
+
+  call(tx) {
+    return this.#call(tx)
+  }
 }
