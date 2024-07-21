@@ -16,7 +16,11 @@ export class TokenInputSwap extends LitElement {
         width: 100%;
         justify-content: center;
       }
-      md-filled-icon-button {
+      .container {
+        display: block;
+        border-radius: 50%;
+        padding: 6px;
+        background-color: var(--surface-1);
         margin: -18px auto;
       }
 
@@ -31,6 +35,8 @@ export class TokenInputSwap extends LitElement {
   ]
 
   render() {
-    return html` <md-filled-icon-button> <custom-icon icon="swap_vert"></custom-icon></md-filled-icon-button> `
+    return html`<span class="container">
+      <md-filled-icon-button> <custom-icon icon="swap_vert"></custom-icon></md-filled-icon-button>
+    </span>`
   }
 }
