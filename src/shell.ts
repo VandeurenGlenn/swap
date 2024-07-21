@@ -123,7 +123,7 @@ export class AppShell extends LitElement {
       this.swapInfo = undefined
       this.resetInputs()
       return
-    } else if (detail === '0' || detail === '0.') {
+    } else if (detail === '0' || detail === '0.' || Number(detail) === 0 || isNaN(Number(detail))) {
       return
     }
     const tokenInput = this.tokenInputEl.selected
@@ -378,6 +378,7 @@ export class AppShell extends LitElement {
       <notification-pane></notification-pane>
       <disconnect-hero></disconnect-hero>
       <swap-hero></swap-hero>
+
       <hero-element>
         ${guard(
           this.chain.chainId,

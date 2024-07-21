@@ -78,11 +78,7 @@ export class NotificationItem extends LitElement {
       <header>
         <h4>${this.value?.title}</h4>
         <span class="flex"></span>
-        <md-icon-button
-          @click=${() =>
-            this.offsetParent?.shadowRoot.removeChild(
-              this.offsetParent.shadowRoot?.querySelector(`[data-id="${this.value.id}"]`)
-            )}>
+        <md-icon-button>
           <custom-icon icon="delete"></custom-icon>
         </md-icon-button>
       </header>

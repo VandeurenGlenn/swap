@@ -113,7 +113,6 @@ export default class DisconnectHero extends LitElement {
 
   render() {
     return html`
-      <div style="height: 181px;"></div>
       <hero-element>
         <span class="header">
           <h4>Disconnect</h4>

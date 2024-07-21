@@ -18,6 +18,9 @@ export class TokenSelector extends LitElement {
 
   static styles = [
     css`
+      * {
+        text-transform: capitalize;
+      }
       :host {
         position: absolute;
         display: flex;

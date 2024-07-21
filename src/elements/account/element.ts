@@ -25,6 +25,9 @@ export class AccountElement extends LitElement {
 
   static styles = [
     css`
+      * {
+        text-transform: capitalize;
+      }
       :host {
         display: flex;
         flex-direction: row;

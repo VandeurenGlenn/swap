@@ -133,7 +133,6 @@ export default class SwapHero extends LitElement {
 
   render() {
     return html`
-      <div style="height: 181px;"></div>
       <hero-element>
         <span class="header">
           <h2>swap quote</h2>

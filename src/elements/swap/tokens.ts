@@ -5,8 +5,11 @@ import '@material/web/button/filled-button.js'
 export class SwapTokens extends LitElement {
   static styles = [
     css`
+      * {
+        text-transform: capitalize;
+      }
       :host {
-        display: contents;
+        display: block;
       }
 
       md-filled-button {

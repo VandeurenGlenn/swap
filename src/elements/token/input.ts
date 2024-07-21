@@ -52,6 +52,7 @@ export class TokenInput extends LitElement {
       * {
         font-weight: 700;
         line-height: 20px;
+        text-transform: capitalize;
       }
 
       :host {
