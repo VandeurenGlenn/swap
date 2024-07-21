@@ -22,6 +22,7 @@ import TokenList from './token-list.js'
 import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
 import { getNativeCoin, getNetworkChainId } from './api.js'
 import ERC20 from './ABI/ERC20.js'
+import { formatUnits, parseUnits } from 'ethers'
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
@@ -36,6 +37,9 @@ export class AppShell extends LitElement {
 
   @property()
   info
+
+  @property()
+  slippage = 5
 
   @provide({ context: createContext('tokens') })
   tokens
@@ -137,7 +141,7 @@ export class AppShell extends LitElement {
     } else {
       const contract = new ethers.Contract(tokenInput.address, ERC20, provider)
 
-      balance = ethers.formatUnits((await contract.balanceOf(this.selectedAccount)).toString())
+      balance = formatUnits(await contract.balanceOf(this.selectedAccount))
     }
 
     if (Number(balance) < Number(amount)) {
@@ -146,10 +150,14 @@ export class AppShell extends LitElement {
       const response = await fetch(
         `https://swap.leofcoin.org/quote?tokenIn=${tokenInput.address}&tokenOut=${
           tokenOutput.address
-        }&amount=${ethers.parseUnits(amount)}&chainId=${this.chain.chainId}`
+        }&amount=${parseUnits(amount, 18)}&chainId=${this.chain.chainId}`
       )
       const quote = await response.json()
-      const units = ethers.formatUnits(String(quote.dstAmount))
+      console.log(quote)
+
+      const units = formatUnits(quote.dstAmount)
+      console.log(units)
+
       if (units < 1) this.tokenOutputEl.amount = units
       else this.tokenOutputEl.amount = Math.round(units * 100) / 100
       this.swapInfo = undefined
@@ -169,13 +177,17 @@ export class AppShell extends LitElement {
     }, 1000)
   }
 
+  #slippageInput = () => {
+    this.slippage = this.shadowRoot?.querySelector('md-slider').value
+  }
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     document.addEventListener('token-selector-change', this.tokenSelectorChange)
     document.addEventListener('accountsChange', this.#accountchange)
     document.addEventListener('networkChange', this.#networkchange)
     document.addEventListener('token-input-change', this.#tokenInputChange)
     document.addEventListener('swap-balance-to-low', this.#swapBalanceToLow)
-
+    this.shadowRoot?.querySelector('md-slider').addEventListener('input', this.#slippageInput)
     this.#epochTimeout()
   }
 
@@ -216,6 +228,25 @@ export class AppShell extends LitElement {
         display: flex;
         flex: 1;
       }
+      .row {
+        align-items: center;
+        display: flex;
+        width: 100%;
+      }
+
+      md-slider {
+        margin: 8px 0;
+        --md-slider-active-track-color: var(--special-accent);
+        --md-slider-pressed-handle-color: var(--accent);
+        --md-slider-handle-color: var(--accent);
+        --md-slider-label-container-color: var(--accent);
+        --md-slider-focus-handle-color: var(--on-accent);
+
+        --md-slider-hover-handle-color: var(--accent);
+        --md-slider-pressed-state-layer-color: var(--accent);
+        --md-slider-hover-state-layer-color: var(--accent);
+        width: 100%;
+      }
 
       img {
         height: 48px;
@@ -232,6 +263,30 @@ export class AppShell extends LitElement {
         max-width: 1200px;
         align-items: center;
         height: 64px;
+      }
+      .slippage-input {
+        width: fit-content;
+        max-width: 28px;
+        background-color: transparent;
+        border: none;
+        color: var(--on-surface-1);
+      }
+      .slippage {
+        margin-top: 6px;
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+        box-sizing: border-box;
+        background-color: var(--surface-2);
+        color: var(--on-surface-2);
+        border-radius: var(--border-radius);
+      }
+      h4 {
+        margin: 0;
+        color: var(--on-surface-1);
+      }
+      input {
+        color: var(--on-surface);
       }
       @media (max-width: 959px) {
         swap-tokens,
@@ -320,6 +375,8 @@ export class AppShell extends LitElement {
   showSwapHero() {
     this.swapHero.inputToken = { amount: this.tokenInputEl.amount, ...this.tokenInputEl.selected }
     this.swapHero.outputToken = { amount: this.tokenOutputEl.amount, ...this.tokenOutputEl.selected }
+    this.swapHero.slippage = this.slippage
+    this.swapHero.info = this.swapInfo
     this.swapHero.shown = true
   }
 
@@ -401,6 +458,24 @@ export class AppShell extends LitElement {
               .selected=${this.babyfox}></token-input>
           `
         )}
+
+        <section class="slippage">
+          <h4>slippage</h4>
+          <span class="row">
+            <md-slider
+              ticks
+              max="50"
+              min="1"
+              value=${this.slippage}
+              labeled
+              step="0.5"></md-slider>
+            <input
+              class="slippage-input"
+              value=${this.slippage} />
+            %
+          </span>
+        </section>
+
         ${this.selectedAccount
           ? html`<swap-tokens ?disabled=${!this.swapInfo}></swap-tokens>`
           : html`<connect-wallet></connect-wallet>`}

@@ -7,6 +7,7 @@ import './../token/input.js'
 import './info.js'
 import * as ethers from './../../../node_modules/ethers/dist/ethers.min.js'
 import { swap } from '../../api.js'
+import '@material/web/slider/slider.js'
 
 @customElement('swap-hero')
 export default class SwapHero extends LitElement {
@@ -15,6 +16,8 @@ export default class SwapHero extends LitElement {
   @property() outputToken
 
   @property() info
+
+  @property() slippage
 
   @property({ reflect: true, type: Boolean }) shown
 
@@ -26,7 +29,13 @@ export default class SwapHero extends LitElement {
     console.log(event.target)
     if (event.target.dataset.action === 'close') this.shown = false
     if (event.target.dataset.action === 'swap') {
-      await swap(this.inputToken, this.outputToken, document.querySelector('app-shell').chain.chainId)
+      await swap(
+        this.inputToken,
+        this.outputToken,
+        document.querySelector('app-shell').chain.chainId,
+        document.querySelector('app-shell').selectedAccount,
+        this.slippage
+      )
 
       this.shown = false
     }
@@ -34,6 +43,9 @@ export default class SwapHero extends LitElement {
 
   static styles = [
     css`
+      * {
+        text-transform: capitalize;
+      }
       :host {
         display: flex;
         flex-direction: column;
@@ -88,6 +100,9 @@ export default class SwapHero extends LitElement {
         margin: 12px 0;
         font-weight: 700;
         height: 56px;
+        font-weight: 900;
+        line-height: 20px;
+        font-size: 18px;
         cursor: pointer;
         --md-filled-button-container-color: var(--accent);
         --md-filled-button-label-text-color: var(--on-accent);
@@ -153,7 +168,15 @@ export default class SwapHero extends LitElement {
             <span class="flex"></span>
             <img src=${this.outputToken?.icon.color} />
           </span>
+
+          <h3>info</h3>
+          <span class="row">
+            <small>slippage</small>
+            <span class="flex"></span>
+            ${this.slippage}%
+          </span>
           <swap-info .value=${this.info}></swap-info>
+
           <md-filled-button data-action="swap">approve & swap</md-filled-button>
         </div>
       </hero-element>

@@ -51,8 +51,7 @@ export default class Provider {
   #call(tx) {
     if (this.providers.length > 0) {
       try {
-        const balance = this.providers[0].call(tx)
-        return balance
+        return this.providers[0].call(tx)
       } catch {
         this.providers.shift()
         return this.#call(tx)
@@ -61,6 +60,8 @@ export default class Provider {
   }
 
   call(tx) {
+    console.log(tx)
+
     return this.#call(tx)
   }
 }

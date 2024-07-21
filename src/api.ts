@@ -1,4 +1,6 @@
+import { Contract, formatUnits, parseUnits } from 'ethers'
 import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
+import ERC20 from './ABI/ERC20.js'
 globalThis.ethers = ethers
 export const networks = {
   1: {
@@ -26,7 +28,7 @@ export const changeNetwork = async (chainId: number) => {
     let id = ethers.toBeHex(chainId).toString()
     if (id.split('0x')[1].startsWith('0')) id = id.replace('0x0', '0x')
     try {
-      await globalThis.ethereum.send('wallet_switchEthereumChain', [{ chainId: id }])
+      await globalThis.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: id }] })
     } catch (error) {
       console.log(error)
 
@@ -34,19 +36,22 @@ export const changeNetwork = async (chainId: number) => {
 
       if (Number(chainId) === 137) {
         try {
-          await globalThis.ethereum.send('wallet_addEthereumChain', [
-            {
-              chainId: id,
-              blockExplorerUrls: ['https://polygon-rpc.com'],
-              rpcUrls: ['https://polygon-rpc.com', 'https://polygon.llamarpc.com', 'https://1rpc.io/matic'],
-              chainName: 'Polygon Mainnet',
-              nativeCurrency: {
-                decimals: 18,
-                name: 'MATIC',
-                symbol: 'MATIC'
+          await globalThis.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: id,
+                blockExplorerUrls: ['https://polygon-rpc.com'],
+                rpcUrls: ['https://polygon-rpc.com', 'https://polygon.llamarpc.com', 'https://1rpc.io/matic'],
+                chainName: 'Polygon Mainnet',
+                nativeCurrency: {
+                  decimals: 18,
+                  name: 'MATIC',
+                  symbol: 'MATIC'
+                }
               }
-            }
-          ])
+            ]
+          })
         } catch (error) {
           console.error(error)
         }
@@ -85,11 +90,11 @@ export const nativeCoins = {
 }
 export const generateExplorerLink = (chainId, transactionHash) => {
   if (chainId === 1) {
-    return `https://etherscan.io?transaction=${transactionHash}`
+    return `https://etherscan.io/tx/${transactionHash}`
   } else if (chainId === 56) {
-    return `https://bscscan.com?transaction=${transactionHash}`
+    return `https://bscscan.com/tx/${transactionHash}`
   } else if (chainId === 137) {
-    return `https://polygonscan.com?transaction=${transactionHash}`
+    return `https://polygonscan.com/tx/${transactionHash}`
   }
 }
 
@@ -98,36 +103,54 @@ export const getNativeCoin = (chainId) => {
   return nativeCoins[chainId]
 }
 
-export const swap = async (inputToken, outputToken, chainId) => {
-  if (inputToken.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-    const response = await fetch(
-      `https://swap.leofcoin.org/approve?chainId=${chainId}&tokenAddress=${
-        inputToken.address
-      }&amount=${ethers.parseUnits(inputToken.amount)}`
-    )
-
-    const { tx } = await response.json()
-    const signed = await globalThis.signer.sendTransaction(tx)
-    await signed.wait()
-    globalThis.notificationManager.add({
-      title: 'approved swap',
-      text: `${inputToken.symbol} -> ${outputToken.symbol}`,
-      link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
-    })
-  }
-
-  const response = await fetch(
-    `https://swap.leofcoin.org/swap?chainId=${chainId}&tokenIn=${inputToken.address}&tokenOut=${
-      outputToken.address
-    }&amount=${ethers.parseUnits(inputToken.amount)}&from=${await globalThis.signer.getAddress()}`
-  )
-
-  const { tx } = await response.json()
-  const signed = await globalThis.signer.sendTransaction(tx)
-  await signed.wait()
-  globalThis.notificationManager.add({
-    title: 'swapped',
-    text: `${inputToken.symbol} -> ${outputToken.symbol}`,
-    link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
-  })
+export const getRouterAddres = async (chainId) => {
+  const response = await fetch(`https://swap.leofcoin.org/routerAddress?chainId=${chainId}`)
+  return response.text()
 }
+
+export const swap = async (inputToken, outputToken, chainId, sender, slippage = 5) =>
+  new Promise(async (resolve) => {
+    if (inputToken.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+      const spender = await getRouterAddres(chainId)
+      console.log({ spender })
+
+      const contract = new Contract(inputToken.address, ERC20, provider)
+      const allowance = await contract.allowance(sender, spender)
+      if (Number(formatUnits(allowance)) < Number(inputToken.amount)) {
+        const response = await fetch(
+          `https://swap.leofcoin.org/approve?chainId=${chainId}&tokenAddress=${
+            inputToken.address
+          }&amount=${ethers.parseUnits(inputToken.amount)}`
+        )
+
+        const tx = await response.json()
+        console.log(tx)
+
+        const signed = await globalThis.signer.sendTransaction(tx)
+        await signed.wait()
+        globalThis.notificationManager.add({
+          title: 'approved swap',
+          text: `${inputToken.symbol} -> ${outputToken.symbol}`,
+          link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
+        })
+      }
+    }
+    console.log(inputToken, outputToken)
+
+    setTimeout(async () => {
+      const response = await fetch(
+        `https://swap.leofcoin.org/swap?chainId=${chainId}&tokenIn=${inputToken.address}&tokenOut=${outputToken.address}&amount=10000000&from=${sender}&slippage=${slippage}`
+      )
+
+      const result = await response.json()
+
+      const signed = await globalThis.signer.sendTransaction(result.tx)
+      await signed.wait()
+      globalThis.notificationManager.add({
+        title: 'swapped',
+        text: `${inputToken.symbol} -> ${outputToken.symbol}`,
+        link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
+      })
+      resolve(result)
+    }, 1000)
+  })
