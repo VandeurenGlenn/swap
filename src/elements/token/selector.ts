@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValueMap } from 'lit'
+import { LitElement, html, css, PropertyValueMap, PropertyValues } from 'lit'
 import { consume, createContext } from '@lit/context'
 import { customElement, property, query } from 'lit/decorators.js'
 import './../../array-repeat.js'
@@ -8,7 +8,10 @@ import './../hero.js'
 @customElement('token-selector')
 export class TokenSelector extends LitElement {
   @consume({ context: createContext('tokens'), subscribe: true })
+  @property()
   tokens
+
+  @property() _tokens
 
   @property() selected
   @property({ reflect: true, type: Boolean }) shown
@@ -122,7 +125,7 @@ export class TokenSelector extends LitElement {
     this.timeout = setTimeout(() => {
       const value = this.input.value
       this.arrayRepeat.reset()
-      this.tokens = Object.values(this.tokensBackup).filter(
+      this._tokens = Object.values(this.tokensBackup).filter(
         (token) =>
           token.name.toLowerCase().includes(value) ||
           token.symbol.toLowerCase().includes(value) ||
@@ -131,12 +134,19 @@ export class TokenSelector extends LitElement {
       if (this.tokens.length === 0 && value.startsWith('0x') && value.length === 42) {
         document.querySelector('app-shell').showImportHero(value)
       }
+      console.log(this.tokens)
+
       this.requestUpdate()
     }, 100)
   }
 
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has('tokens')) this._tokens = this.tokens
+  }
+
   #click = ({ target }: CustomEvent) => {
     const action = target.dataset.action
+
     if (action) {
       switch (action) {
         case 'close':
@@ -175,7 +185,7 @@ export class TokenSelector extends LitElement {
           autocomplete="on" />
         ${this.tokens
           ? html`<array-repeat
-              .items=${this.tokens}
+              .items=${this._tokens}
               name-space="item">
               <template
                 ><span
