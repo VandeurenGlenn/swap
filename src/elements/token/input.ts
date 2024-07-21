@@ -43,7 +43,6 @@ export class TokenInput extends LitElement {
   reset() {
     this.errorShown = false
     this.amount = null
-    this.selected = undefined
     this.input.value = null
   }
 
