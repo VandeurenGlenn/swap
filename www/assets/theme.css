@@ -26,6 +26,8 @@ body {
 
   --error: #ff7575;
 
+  --warning: #ffc775;
+
   --special-accent-disabled: rgb(255 179 117 / 23%);
   --on-special-accent-disabled: rgb(255 183 113 / 63%);
 

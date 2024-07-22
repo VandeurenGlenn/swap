@@ -15,12 +15,13 @@ import './elements/import-hero.js'
 import './elements/connect/hero.js'
 import './elements/disconnect/hero.js'
 import './elements/swap/hero.js'
+import './elements/swap/status.js'
 import './elements/connect/wallet.js'
 import './elements/notification/manager.js'
 import './elements/notification/pane.js'
 import TokenList from './token-list.js'
 import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
-import { getNativeCoin, getNetworkChainId } from './api.js'
+import { getBalance, getNativeCoin, getNetworkChainId } from './api.js'
 import ERC20 from './ABI/ERC20.js'
 import { formatUnits, parseUnits } from 'ethers'
 
@@ -38,8 +39,12 @@ export class AppShell extends LitElement {
   @property()
   info
 
-  @property()
+  @property({ type: Number })
   slippage = 5
+
+  @provide({ context: createContext('slippage-warning') })
+  @property({ type: Boolean })
+  slippageWarning
 
   @provide({ context: createContext('tokens') })
   tokens
@@ -179,6 +184,12 @@ export class AppShell extends LitElement {
 
   #slippageInput = () => {
     this.slippage = this.shadowRoot?.querySelector('md-slider').value
+    this.slippageWarning = Number(this.slippage) > 10
+  }
+
+  #input = () => {
+    this.slippage = this.shadowRoot?.querySelector('input').value
+    this.slippageWarning = Number(this.slippage) > 10
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -188,6 +199,7 @@ export class AppShell extends LitElement {
     document.addEventListener('token-input-change', this.#tokenInputChange)
     document.addEventListener('swap-balance-to-low', this.#swapBalanceToLow)
     this.shadowRoot?.querySelector('md-slider').addEventListener('input', this.#slippageInput)
+    this.shadowRoot?.querySelector('input').addEventListener('input', this.#input)
     this.#epochTimeout()
   }
 
@@ -288,6 +300,16 @@ export class AppShell extends LitElement {
       input {
         color: var(--on-surface);
       }
+
+      .warning {
+        color: var(--warning);
+      }
+
+      .warning custom-icon {
+        margin-right: 12px;
+        --custom-icon-color: var(--warning);
+      }
+
       @media (max-width: 959px) {
         swap-tokens,
         connect-wallet {
@@ -321,8 +343,12 @@ export class AppShell extends LitElement {
 
   async sellTokenSelect() {
     const tokens = await this.#tokenList.getList()
-    const onselect = ({ detail }) => {
-      this.tokenInputEl.selected = detail
+    const onselect = async ({ detail }) => {
+      if (detail && detail.address !== this.tokenInputEl.selected?.address) {
+        const balance = await getBalance(this.selectedAccount, detail.address, detail.decimals)
+        this.tokenInputEl.balance = balance
+        this.tokenInputEl.selected = detail
+      }
       this.tokenSelector.removeEventListener('select', onselect)
     }
 
@@ -336,16 +362,11 @@ export class AppShell extends LitElement {
   async buyTokenSelect() {
     const tokens = await this.#tokenList.getList()
     const onselect = async ({ detail }) => {
-      let balance
-      if (detail.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-        balance = ethers.formatUnits(await provider.getBalance(this.selectedAccount))
-      } else {
-        const contract = new ethers.Contract(detail.address, ERC20, provider)
-
-        balance = ethers.formatUnits((await contract.balanceOf(this.selectedAccount)).toString())
+      if (detail && detail.address !== this.tokenOutputEl.selected?.address) {
+        const balance = await getBalance(this.selectedAccount, detail.address, detail.decimals)
+        this.tokenOutputEl.balance = balance
+        this.tokenOutputEl.selected = detail
       }
-      this.tokenOutputEl.balance = balance
-      this.tokenOutputEl.selected = detail
       this.tokenSelector.removeEventListener('select', onselect)
     }
 
@@ -402,6 +423,7 @@ export class AppShell extends LitElement {
           <span name="account_balance">@symbol-account_balance</span>
           <span name="cloud">@symbol-cloud</span>
           <span name="delete">@symbol-delete</span>
+          <span name="done">@symbol-check</span>
           <span name="swap_vert">@symbol-swap_vert</span>
           <span name="keyboard_arrow_down">@symbol-keyboard_arrow_down</span>
           <span name="keyboard_arrow_up">@symbol-keyboard_arrow_up</span>
@@ -409,6 +431,7 @@ export class AppShell extends LitElement {
           <span name="error">@symbol-error</span>
           <span name="menu_open">@symbol-menu_open</span>
           <span name="notifications">@symbol-notifications</span>
+          <span name="warning">@symbol-warning</span>
         </template>
       </custom-icon-set>
       <header>
@@ -435,6 +458,7 @@ export class AppShell extends LitElement {
       <notification-pane></notification-pane>
       <disconnect-hero></disconnect-hero>
       <swap-hero></swap-hero>
+      <swap-status></swap-status>
 
       <hero-element>
         ${guard(
@@ -474,6 +498,12 @@ export class AppShell extends LitElement {
               value=${this.slippage} />
             %
           </span>
+
+          ${this.slippageWarning
+            ? html`<span class="row warning"
+                ><custom-icon icon="warning"></custom-icon><small>high slippage</small></span
+              >`
+            : ''}
         </section>
 
         ${this.selectedAccount

@@ -8,6 +8,7 @@ import './info.js'
 import * as ethers from './../../../node_modules/ethers/dist/ethers.min.js'
 import { swap } from '../../api.js'
 import '@material/web/slider/slider.js'
+import { consume, createContext } from '@lit/context'
 
 @customElement('swap-hero')
 export default class SwapHero extends LitElement {
@@ -21,6 +22,9 @@ export default class SwapHero extends LitElement {
 
   @property({ reflect: true, type: Boolean }) shown
 
+  @consume({ context: createContext('slippage-warning'), subscribe: true })
+  slippageWarning
+
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     this.shadowRoot.addEventListener('click', this.#click.bind(this))
   }
@@ -29,6 +33,8 @@ export default class SwapHero extends LitElement {
     console.log(event.target)
     if (event.target.dataset.action === 'close') this.shown = false
     if (event.target.dataset.action === 'swap') {
+      // close asap (status handles the rest)
+      this.shown = false
       await swap(
         this.inputToken,
         this.outputToken,
@@ -36,8 +42,6 @@ export default class SwapHero extends LitElement {
         document.querySelector('app-shell').selectedAccount,
         this.slippage
       )
-
-      this.shown = false
     }
   }
 
@@ -57,10 +61,6 @@ export default class SwapHero extends LitElement {
         justify-content: center;
         pointer-events: none;
         opacity: 0;
-      }
-
-      custom-icon {
-        --custom-icon-color: var(--on-surface-2);
       }
 
       hero-element {
@@ -92,6 +92,23 @@ export default class SwapHero extends LitElement {
         color: var(--on-surface-1);
       }
 
+      .flex {
+        display: flex;
+        flex: 1;
+      }
+
+      .row {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        padding-bottom: 12px;
+      }
+
+      .container {
+        padding: 0 12px;
+        box-sizing: border-box;
+      }
+
       strong {
         font-size: 20px;
       }
@@ -119,29 +136,21 @@ export default class SwapHero extends LitElement {
         opacity: 1;
       }
 
-      .flex {
-        display: flex;
-        flex: 1;
-      }
-
       token-input[action='sell'] {
         margin-bottom: 10px;
-      }
-
-      .row {
-        display: flex;
-        width: 100%;
-        align-items: center;
-        padding-bottom: 12px;
       }
 
       img {
         height: 32px;
       }
 
-      .container {
-        padding: 0 12px;
-        box-sizing: border-box;
+      .warning {
+        color: var(--warning);
+      }
+
+      .warning custom-icon {
+        margin-right: 12px;
+        --custom-icon-color: var(--warning);
       }
     `
   ]
@@ -169,14 +178,18 @@ export default class SwapHero extends LitElement {
             <img src=${this.outputToken?.icon.color} />
           </span>
 
-          <h3>info</h3>
+          <swap-info .value=${this.info}></swap-info>
+
           <span class="row">
             <small>slippage</small>
             <span class="flex"></span>
             ${this.slippage}%
           </span>
-          <swap-info .value=${this.info}></swap-info>
-
+          ${this.slippageWarning
+            ? html`<span class="row warning"
+                ><custom-icon icon="warning"></custom-icon><small>high slippage</small></span
+              >`
+            : ''}
           <md-filled-button data-action="swap">approve & swap</md-filled-button>
         </div>
       </hero-element>

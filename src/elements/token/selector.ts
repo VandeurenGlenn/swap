@@ -4,12 +4,13 @@ import { customElement, property, query } from 'lit/decorators.js'
 import './../../array-repeat.js'
 import '@material/web/button/filled-tonal-button.js'
 import './../hero.js'
+import { TokenListToken } from '../../token-list.js'
 
 @customElement('token-selector')
 export class TokenSelector extends LitElement {
   @consume({ context: createContext('tokens'), subscribe: true })
   @property()
-  tokens
+  tokens: { [symbol: string]: TokenListToken }
 
   @property() _tokens
 
@@ -144,6 +145,10 @@ export class TokenSelector extends LitElement {
     if (_changedProperties.has('tokens')) this._tokens = this.tokens
   }
 
+  reset() {
+    this.shadowRoot.querySelector('input').value = ''
+  }
+
   #click = ({ target }: CustomEvent) => {
     const action = target.dataset.action
 
@@ -151,9 +156,12 @@ export class TokenSelector extends LitElement {
       switch (action) {
         case 'close':
           this.shown = false
+          this.reset()
+          this.dispatchEvent(new CustomEvent('select'))
           break
         case 'select':
           this.shown = false
+          this.reset()
           this.dispatchEvent(new CustomEvent('select', { detail: this.tokens[target.dataset.symbol] }))
           break
         default:

@@ -1,5 +1,10 @@
 import { Contract, formatUnits, parseUnits, toBeHex } from 'ethers'
 import ERC20 from './ABI/ERC20.js'
+import { TokenListToken } from './token-list.js'
+
+export interface InputToken extends TokenListToken {
+  amount: string
+}
 
 export const networks = {
   1: {
@@ -107,48 +112,84 @@ export const getRouterAddres = async (chainId) => {
   return response.text()
 }
 
-export const swap = async (inputToken, outputToken, chainId, sender, slippage = 5) =>
+export const getBalance = async (owner, tokenAddress, decimals) => {
+  let balance = '0'
+  if (tokenAddress === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+    balance = formatUnits(await provider.getBalance(owner), decimals)
+  } else {
+    const contract = new Contract(tokenAddress, ERC20, provider)
+    balance = formatUnits(await contract.balanceOf(owner), decimals)
+  }
+  return balance
+}
+
+export const quote = async () => {}
+
+export const swap = async (inputToken: InputToken, outputToken: TokenListToken, chainId, sender, slippage = 5) =>
   new Promise(async (resolve) => {
-    if (inputToken.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-      const spender = await getRouterAddres(chainId)
+    try {
+      document.dispatchEvent(new CustomEvent('swap-start'))
 
-      const contract = new Contract(inputToken.address, ERC20, provider)
-      const allowance = await contract.allowance(sender, spender)
-      if (Number(formatUnits(allowance)) < Number(inputToken.amount)) {
-        const response = await fetch(
-          `https://swap.leofcoin.org/approve?chainId=${chainId}&tokenAddress=${inputToken.address}&amount=${parseUnits(
-            inputToken.amount
-          ).toString()}`
+      if (inputToken.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+        document.dispatchEvent(new CustomEvent('swap-allowance-start'))
+        const spender = await getRouterAddres(chainId)
+
+        const contract = new Contract(inputToken.address, ERC20, signer)
+        const allowance = await contract.allowance(sender, spender)
+        console.log(allowance)
+
+        document.dispatchEvent(
+          new CustomEvent('swap-allowance-end', { detail: formatUnits(allowance, inputToken.decimals) })
         )
+        if (Number(formatUnits(allowance, inputToken.decimals)) < Number(inputToken.amount)) {
+          document.dispatchEvent(new CustomEvent('swap-approve-start'))
 
-        const tx = await response.json()
+          const approve = await contract.approve(spender, parseUnits(inputToken.amount, inputToken.decimals))
+          console.log(approve)
+          await approve.wait()
 
-        const signed = await globalThis.signer.sendTransaction(tx)
-        await signed.wait()
-        globalThis.notificationManager.add({
-          title: 'approved swap',
-          text: `${inputToken.symbol} -> ${outputToken.symbol}`,
-          link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
-        })
+          globalThis.notificationManager.add({
+            title: 'approved swap',
+            text: `${inputToken.symbol} -> ${outputToken.symbol}`,
+            link: { title: 'open explorer', url: generateExplorerLink(chainId, approve.hash) }
+          })
+          document.dispatchEvent(new CustomEvent('swap-approve-end', { detail: approve }))
+        }
       }
+    } catch (error) {
+      console.log(error.prototype)
+
+      if (error.message.includes('user rejected action')) document.dispatchEvent(new CustomEvent('swap-cancel'))
     }
 
     setTimeout(async () => {
       const response = await fetch(
         `https://swap.leofcoin.org/swap?chainId=${chainId}&tokenIn=${inputToken.address}&tokenOut=${
           outputToken.address
-        }&amount=${parseUnits(inputToken.amount).toString()}&from=${sender}&slippage=${slippage}`
+        }&amount=${parseUnits(inputToken.amount, inputToken.decimals).toString()}&from=${sender}&slippage=${slippage}`
       )
 
       const result = await response.json()
 
-      const signed = await globalThis.signer.sendTransaction(result.tx)
-      await signed.wait()
-      globalThis.notificationManager.add({
-        title: 'swapped',
-        text: `${inputToken.symbol} -> ${outputToken.symbol}`,
-        link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
-      })
-      resolve(result)
+      if (Object.keys(result).length !== 0) {
+        try {
+          const signed = await globalThis.signer.sendTransaction(result.tx)
+          await signed.wait()
+          globalThis.notificationManager.add({
+            title: 'swapped',
+            text: `${inputToken.symbol} -> ${outputToken.symbol}`,
+            link: { title: 'open explorer', url: generateExplorerLink(chainId, signed.hash) }
+          })
+          resolve(result)
+
+          document.dispatchEvent(new CustomEvent('swap-end', { detail: result }))
+        } catch (error) {
+          console.log(error.message)
+
+          if (error.message.includes('user rejected action')) document.dispatchEvent(new CustomEvent('swap-cancel'))
+        }
+      } else {
+        document.dispatchEvent(new CustomEvent('swap-error'))
+      }
     }, 1000)
   })

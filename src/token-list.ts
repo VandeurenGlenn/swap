@@ -1,3 +1,11 @@
+export type TokenListToken = {
+  symbol: string
+  name: string
+  address: string
+  icon: string
+  decimals: 9
+}
+
 export default class TokenList {
   dex: 'uniswap' | 'pancakeswap' | '1inch' | 'coingecko'
   chain: 'mainnet' | 'kovan' | 'binance'
@@ -36,7 +44,7 @@ export default class TokenList {
     return tokens
   }
 
-  async getList(chain?, dex?, prefix?) {
+  async getList(chain?, dex?, prefix?): Promise<{ [symbol: string]: TokenListToken }> {
     if (!chain) chain = this.chain
     if (!dex) dex = this.dex
     prefix = prefix || 'https://raw.githubusercontent.com/CoinsSwap/token-list/main/build/tokens'
