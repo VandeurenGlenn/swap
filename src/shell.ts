@@ -192,6 +192,10 @@ export class AppShell extends LitElement {
     this.slippageWarning = Number(this.slippage) > 10
   }
 
+  // async updateTokenSellBalance() {
+  //   this.tokenInputEl.balance = await getBalance(this.selectedAccount)
+  // }
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     document.addEventListener('token-selector-change', this.tokenSelectorChange)
     document.addEventListener('accountsChange', this.#accountchange)
@@ -201,6 +205,8 @@ export class AppShell extends LitElement {
     this.shadowRoot?.querySelector('md-slider').addEventListener('input', this.#slippageInput)
     this.shadowRoot?.querySelector('input').addEventListener('input', this.#input)
     this.#epochTimeout()
+
+    // this.updateTokenSellBalance()
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {

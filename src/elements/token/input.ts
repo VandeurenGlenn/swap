@@ -158,6 +158,8 @@ export class TokenInput extends LitElement {
       </span>
       ${this.errorShown
         ? html`<span class="error-message"><custom-icon icon="error"></custom-icon> ${this.errorMessage} </span>`
+        : this.balance
+        ? html`<small>${this.balance}</small>`
         : ''}
     `
   }
