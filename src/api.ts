@@ -1,7 +1,6 @@
-import { Contract, formatUnits, parseUnits } from 'ethers'
-import * as ethers from './../node_modules/ethers/dist/ethers.min.js'
+import { Contract, formatUnits, parseUnits, toBeHex } from 'ethers'
 import ERC20 from './ABI/ERC20.js'
-globalThis.ethers = ethers
+
 export const networks = {
   1: {
     name: 'ethereum',
@@ -25,7 +24,7 @@ export const getNetworkChainId = (name) => chainIds[supportedNetworks.indexOf(na
 
 export const changeNetwork = async (chainId: number) => {
   if (globalThis.walletProvider === 'metamask') {
-    let id = ethers.toBeHex(chainId).toString()
+    let id = toBeHex(chainId).toString()
     if (id.split('0x')[1].startsWith('0')) id = id.replace('0x0', '0x')
     try {
       await globalThis.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: id }] })
@@ -112,19 +111,17 @@ export const swap = async (inputToken, outputToken, chainId, sender, slippage = 
   new Promise(async (resolve) => {
     if (inputToken.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
       const spender = await getRouterAddres(chainId)
-      console.log({ spender })
 
       const contract = new Contract(inputToken.address, ERC20, provider)
       const allowance = await contract.allowance(sender, spender)
       if (Number(formatUnits(allowance)) < Number(inputToken.amount)) {
         const response = await fetch(
-          `https://swap.leofcoin.org/approve?chainId=${chainId}&tokenAddress=${
-            inputToken.address
-          }&amount=${ethers.parseUnits(inputToken.amount)}`
+          `https://swap.leofcoin.org/approve?chainId=${chainId}&tokenAddress=${inputToken.address}&amount=${parseUnits(
+            inputToken.amount
+          ).toString()}`
         )
 
         const tx = await response.json()
-        console.log(tx)
 
         const signed = await globalThis.signer.sendTransaction(tx)
         await signed.wait()
@@ -135,11 +132,12 @@ export const swap = async (inputToken, outputToken, chainId, sender, slippage = 
         })
       }
     }
-    console.log(inputToken, outputToken)
 
     setTimeout(async () => {
       const response = await fetch(
-        `https://swap.leofcoin.org/swap?chainId=${chainId}&tokenIn=${inputToken.address}&tokenOut=${outputToken.address}&amount=10000000&from=${sender}&slippage=${slippage}`
+        `https://swap.leofcoin.org/swap?chainId=${chainId}&tokenIn=${inputToken.address}&tokenOut=${
+          outputToken.address
+        }&amount=${parseUnits(inputToken.amount).toString()}&from=${sender}&slippage=${slippage}`
       )
 
       const result = await response.json()
