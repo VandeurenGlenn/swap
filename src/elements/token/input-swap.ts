@@ -17,11 +17,16 @@ export class TokenInputSwap extends LitElement {
         justify-content: center;
       }
       .container {
-        display: block;
+        display: flex;
         border-radius: 50%;
         padding: 6px;
+        box-sizing: border-box;
         background-color: var(--surface-1);
-        margin: -18px auto;
+        margin: -24px auto;
+        height: 56px;
+        width: 56px;
+        align-items: center;
+        justify-content: center;
       }
 
       md-filled-icon-button {
