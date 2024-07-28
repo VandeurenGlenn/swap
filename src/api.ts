@@ -1,6 +1,8 @@
 import { Contract, formatUnits, parseUnits, toBeHex } from 'ethers'
 import ERC20 from './ABI/ERC20.js'
 import { TokenListToken } from './token-list.js'
+import chainmap from 'chainmap'
+import { ChainInfo } from './types/provider.js'
 
 export interface InputToken extends TokenListToken {
   amount: string
@@ -18,6 +20,42 @@ export const networks = {
   137: {
     name: 'polygon',
     logo: './assets/polygon.svg'
+  },
+  42161: {
+    name: 'arbitrum',
+    logo: './assets/arbitrum.svg'
+  },
+  1313161554: {
+    name: 'aurora',
+    logo: './assets/aurora.svg'
+  },
+  43114: {
+    name: 'avalanche',
+    logo: './assets/avalanche.svg'
+  },
+  8453: {
+    name: 'base',
+    logo: './assets/base.svg'
+  },
+  324: {
+    name: 'zkSync',
+    logo: './assets/zksync-era.svg'
+  },
+  250: {
+    name: 'fantom',
+    logo: './assets/fantom.svg'
+  },
+  100: {
+    name: 'gnosis',
+    logo: './assets/gnosis.svg'
+  },
+  8217: {
+    name: 'klaytn',
+    logo: './assets/klaytn.svg'
+  },
+  10: {
+    name: 'optimism',
+    logo: './assets/optimism.svg'
   }
 }
 
@@ -37,28 +75,26 @@ export const changeNetwork = async (chainId: number) => {
       console.log(error)
 
       console.log(chainId)
-
-      if (Number(chainId) === 137) {
-        try {
-          await globalThis.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: id,
-                blockExplorerUrls: ['https://polygon-rpc.com'],
-                rpcUrls: ['https://polygon-rpc.com', 'https://polygon.llamarpc.com', 'https://1rpc.io/matic'],
-                chainName: 'Polygon Mainnet',
-                nativeCurrency: {
-                  decimals: 18,
-                  name: 'MATIC',
-                  symbol: 'MATIC'
-                }
+      const chainInfo = chainmap[chainId] as ChainInfo
+      try {
+        await globalThis.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: id,
+              blockExplorerUrls: [chainInfo.explorerUrl],
+              rpcUrls: chainInfo.rpc,
+              chainName: chainInfo.name,
+              nativeCurrency: {
+                decimals: chainInfo.currency.decimals,
+                name: chainInfo.currency.name,
+                symbol: chainInfo.currency.symbol
               }
-            ]
-          })
-        } catch (error) {
-          console.error(error)
-        }
+            }
+          ]
+        })
+      } catch (error) {
+        console.error(error)
       }
     }
   } else {
@@ -72,7 +108,6 @@ export const nativeCoins = {
       color: './assets/ethereum.svg'
     },
     name: 'Ethereum',
-    address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     symbol: 'ETH'
   },
   56: {
@@ -80,7 +115,6 @@ export const nativeCoins = {
       color: './assets/binance.svg'
     },
     name: 'Binance',
-    address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     symbol: 'BNB'
   },
   137: {
@@ -88,23 +122,56 @@ export const nativeCoins = {
       color: './assets/polygon.svg'
     },
     name: 'Polygon',
-    address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     symbol: 'MATIC'
+  },
+  42161: {
+    name: 'arbitrum',
+    icon: { color: './assets/arbitrum.svg' }
+  },
+  1313161554: {
+    name: 'aurora',
+    icon: { color: './assets/aurora.svg' }
+  },
+  43114: {
+    name: 'avalanche',
+    icon: { color: './assets/avalanche.svg' }
+  },
+  8453: {
+    name: 'base',
+    icon: { color: './assets/base.svg' }
+  },
+  324: {
+    name: 'zkSync',
+    icon: { color: './assets/zksync-era.svg' }
+  },
+  250: {
+    name: 'fantom',
+    icon: { color: './assets/fantom.svg' }
+  },
+  100: {
+    name: 'gnosis',
+    icon: { color: './assets/gnosis.svg' }
+  },
+  8217: {
+    name: 'klaytn',
+    icon: { color: './assets/klaytn.svg' }
+  },
+  10: {
+    name: 'optimism',
+    icon: { color: './assets/optimism.svg' }
   }
 }
 export const generateExplorerLink = (chainId, transactionHash) => {
-  if (chainId === 1) {
-    return `https://etherscan.io/tx/${transactionHash}`
-  } else if (chainId === 56) {
-    return `https://bscscan.com/tx/${transactionHash}`
-  } else if (chainId === 137) {
-    return `https://polygonscan.com/tx/${transactionHash}`
-  }
+  const chainInfo = chainmap[chainId] as ChainInfo
+
+  return `https://${chainInfo.explorerUrl}/tx/${transactionHash}`
 }
 
 export const getNativeCoin = (chainId) => {
   if (!chainIds.includes(chainId)) throw new Error(`nothing found for ${chainId}`)
-  return nativeCoins[chainId]
+
+  const chainInfo = chainmap[chainId] as ChainInfo
+  return { address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...nativeCoins[chainId], ...chainInfo.currency }
 }
 
 export const getRouterAddres = async (chainId) => {

@@ -137,6 +137,10 @@ export class AccountElement extends LitElement {
         box-sizing: border-box;
         padding: 0 6px 12px 6px;
       }
+
+      .pane {
+        overflow-y: auto;
+      }
     `
   ]
 
