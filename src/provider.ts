@@ -9,6 +9,7 @@ export default class Provider {
   constructor(chainId) {
     this.chainInfo = chainMap[chainId]
     console.log(this.chainInfo)
+    console.log(chainMap)
 
     this.providers = []
     for (const url of this.chainInfo.rpc) {

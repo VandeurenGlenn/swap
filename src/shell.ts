@@ -29,11 +29,11 @@ import { formatUnits, parseUnits } from 'ethers'
 export class AppShell extends LitElement {
   #tokenList: TokenList
 
-  babyfox = {
-    symbol: 'BABYFOX',
-    name: 'babyfox',
-    address: '0x8FFfED722C699848d0c0dA9ECfEde20e8ACEf7cE',
-    icon: { color: './assets/logo.webp' }
+  leofcoin = {
+    symbol: 'LFC',
+    name: 'leofcoin',
+    address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    icon: { color: './assets/leofcoin.svg' }
   }
 
   @property()
@@ -334,12 +334,12 @@ export class AppShell extends LitElement {
   ]
 
   /**
-   * add native, babyfox and imported tokens to tokenlist
+   * add native, leofcoin and imported tokens to tokenlist
    */
   #appendTokenList(tokens) {
     const native = getNativeCoin(this.chain.chainId)
     tokens[native.symbol] = native
-    tokens[this.babyfox.symbol] = this.babyfox
+    tokens[this.leofcoin.symbol] = this.leofcoin
 
     const imported = localStorage.getItem('imported-tokens')
     if (imported) {
@@ -444,7 +444,7 @@ export class AppShell extends LitElement {
         </template>
       </custom-icon-set>
       <header>
-        <img src="./assets/logo.webp" />
+        <img src="./assets/leofcoin.svg" />
         <span class="flex"></span>
         <account-element></account-element>
         <md-icon-button
@@ -456,7 +456,7 @@ export class AppShell extends LitElement {
         ></md-icon-button>
       </header>
       <!--
-      <img src="./assets/babyfox.webp" />
+      <img src="./assets/leofcoin.webp" />
       <img src="./assets/FoxSwap.png" />
       -->
 
@@ -482,13 +482,13 @@ export class AppShell extends LitElement {
 
         <token-input-swap @click=${this.swapInput}></token-input-swap>
         ${guard(
-          this.babyfox,
+          this.leofcoin,
           () => html`
             <token-input
               no-input
               action="buy"
               @token-select=${this.buyTokenSelect}
-              .selected=${this.babyfox}></token-input>
+              .selected=${this.leofcoin}></token-input>
           `
         )}
 

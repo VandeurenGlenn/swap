@@ -9,14 +9,14 @@ body {
 
   --surface-1-hover: rgb(27, 27, 27);
 
-  --accent: rgb(249, 130, 32);
-  --on-accent: rgb(118, 58, 0);
+  --accent: rgb(61 32 249);
+  --on-accent: rgb(230 232 255);
 
-  --accent-1: rgb(255, 188, 130);
-  --on-accent-1: rgb(83, 38, 0);
+  --accent-1: rgb(130 131 255);
+  --on-accent-1: rgb(0 10 118);
 
-  --special-accent: rgb(249 130 32 / 23%);
-  --on-special-accent: rgb(255 126 0);
+  --special-accent: rgb(135 164 255 / 23%);
+  --on-special-accent: rgb(0 181 255);
 
   --border-radius: 16px;
   --border-radius-large: 24px;
@@ -28,8 +28,8 @@ body {
 
   --warning: #ffc775;
 
-  --special-accent-disabled: rgb(255 179 117 / 23%);
-  --on-special-accent-disabled: rgb(255 183 113 / 63%);
+  --special-accent-disabled: rgb(117 177 255 / 23%);
+  --on-special-accent-disabled: rgb(113 176 255 / 63%);
 
   --motion-in: cubic-bezier(0.05, 0.7, 0.1, 1);
   --motion-out: cubic-bezier(0.3, 0, 0.8, 0.15);
